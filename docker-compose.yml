@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: siiec_db
+    environment:
+      POSTGRES_USER: siiec_user
+      POSTGRES_PASSWORD: denunzia_2026
+      POSTGRES_DB: siiec_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - siiec_network
+
+  # Backend API Service
+  backend:
+    build: ./server
+    container_name: siiec_backend
+    environment:
+      - PORT=3004
+      - DATABASE_URL=postgresql://siiec_user:denunzia_2026@db:5432/siiec_db
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=siiec_db
+      - DB_USER=siiec_user
+      - DB_PASSWORD=denunzia_2026
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-default_secret_for_audit}
+    ports:
+      - "3004:3004"
+    depends_on:
+      - db
+    networks:
+      - siiec_network
+
+  # Frontend Service
+  frontend:
+    build: .
+    container_name: siiec_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - siiec_network
+
+networks:
+  siiec_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

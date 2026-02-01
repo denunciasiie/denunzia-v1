@@ -1,0 +1,39 @@
+{
+    "name": "siiec-backend",
+    "version": "1.0.0",
+    "description": "Backend API for SIIEC - Sistema Integrado de Inteligencia Ética y Criminal",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "nodemon server.js",
+        "db:setup": "node scripts/setup-database.js",
+        "db:migrate": "node scripts/migrate.js",
+        "generate-keys": "node generate-keys.js",
+        "cleanup": "node scripts/cleanup-system.js"
+    },
+    "keywords": [
+        "api",
+        "postgresql",
+        "encryption",
+        "security"
+    ],
+    "author": "SIIEC Team",
+    "license": "MIT",
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "express-rate-limit": "^7.1.5",
+        "helmet": "^7.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "pg": "^8.11.3",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1",
+        "winston": "^3.11.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.2"
+    }
+}

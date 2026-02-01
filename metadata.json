@@ -1,0 +1,7 @@
+{
+  "name": "SIIEC - Sistema Integrado de Inteligencia Ética y Criminal",
+  "description": "Plataforma segura de denuncia ciudadana anónima con cifrado E2EE y análisis de inteligencia geoespacial para México.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
