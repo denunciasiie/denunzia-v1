@@ -78,7 +78,9 @@ export const AdminPanel: React.FC = () => {
     e.preventDefault();
     setBooting(true);
     setTimeout(() => {
-      if (password === "admin123" || password === "admin") {
+      const secureKey = import.meta.env.VITE_ADMIN_PASSWORD || "admin_fallback_disabled";
+
+      if (password === secureKey) {
         setIsAuthenticated(true);
       } else {
         alert("CREDENCIALES INCORRECTAS - ACCESO DENEGADO");
