@@ -103,7 +103,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                             <span className="text-2xl md:text-4xl group-hover:scale-110 transition-transform">✓</span>
                             <div className="flex-1">
                                 <div className="text-lg md:text-xl font-black text-slate-50 mb-1">Proceder con Seguridad Estándar</div>
-                                <div className="text-sm md:text-base font-semibold text-slate-300">Conexión cifrada HTTPS + Anonimización de datos</div>
+                                <div className="text-sm md:text-base font-semibold text-slate-300">Conexión cifrada HTTPS + datos de forma anónima</div>
                             </div>
                         </button>
 
