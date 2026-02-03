@@ -9,13 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "recharts": "^3.4.1",
-    "react": "^19.2.0",
     "@google/genai": "^1.30.0",
-    "react-dom": "^19.2.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.554.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-helmet-async": "^2.0.5",
     "react-leaflet": "^5.0.0",
-    "leaflet": "^1.9.4"
+    "react-router-dom": "^7.13.0",
+    "recharts": "^3.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

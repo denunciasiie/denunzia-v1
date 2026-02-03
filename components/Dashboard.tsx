@@ -35,10 +35,10 @@ export const Dashboard: React.FC = () => {
       </header>
 
       {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 overflow-y-auto md:overflow-hidden pb-20 md:pb-0">
+      <section className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 overflow-y-auto md:overflow-hidden pb-20 md:pb-0" aria-label="Panel de Métricas">
 
         {/* Map Section - Occupies 3 columns */}
-        <div className="lg:col-span-3 glass-effect rounded-2xl overflow-hidden border border-white/10 flex flex-col relative group h-[500px] md:h-auto">
+        <article className="lg:col-span-3 glass-effect rounded-2xl overflow-hidden border border-white/10 flex flex-col relative group h-[500px] md:h-auto">
           <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#d946ef] via-[#8b5cf6] to-[#3b82f6] opacity-50"></div>
 
           <div className="p-4 bg-black/40 border-b border-white/5 flex flex-col md:flex-row justify-between items-center z-10 backdrop-blur-md gap-4">
@@ -54,7 +54,7 @@ export const Dashboard: React.FC = () => {
             {/* Map Overlay HUD */}
             <div className="absolute top-4 left-4 pointer-events-none md:top-6 md:left-6">
               <div className="bg-black/80 backdrop-blur-xl p-3 md:p-5 rounded-2xl border border-white/10 shadow-2xl">
-                <h4 className="text-[10px] font-cyber text-[#94a3b8] mb-3 md:mb-4 uppercase tracking-tighter">Firma Digital Estructural</h4>
+                <h2 className="text-[10px] font-cyber text-[#94a3b8] mb-3 md:mb-4 uppercase tracking-tighter">Firma Digital Estructural</h2>
                 <div className="space-y-2 md:space-y-3">
                   <div className="flex items-center gap-3 text-[10px] font-cyber">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6]"></div>
@@ -72,16 +72,16 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </article>
 
         {/* Info & Stats Section - 1 column */}
-        <div className="flex flex-col gap-6 h-full overflow-visible md:overflow-y-auto custom-scrollbar pr-0 md:pr-1">
+        <aside className="flex flex-col gap-6 h-full overflow-visible md:overflow-y-auto custom-scrollbar pr-0 md:pr-1">
 
           {/* Chart Card */}
-          <div className="glass-effect p-6 rounded-2xl border border-white/10 flex flex-col flex-1 min-h-[300px]">
-            <h3 className="text-xs font-cyber font-bold mb-6 flex items-center gap-3 text-[#d946ef]">
+          <article className="glass-effect p-6 rounded-2xl border border-white/10 flex flex-col flex-1 min-h-[300px]">
+            <h2 className="text-xs font-cyber font-bold mb-6 flex items-center gap-3 text-[#d946ef]">
               <Filter size={14} /> DISTRIBUCIÓN
-            </h3>
+            </h2>
             <div className="flex-1 h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statsData} layout="vertical" margin={{ top: 0, right: 20, left: -20, bottom: 0 }}>
@@ -107,10 +107,10 @@ export const Dashboard: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </article>
 
-        </div>
-      </div>
+        </aside>
+      </section>
     </div>
   );
 };

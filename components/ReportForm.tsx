@@ -273,9 +273,9 @@ export const ReportForm: React.FC = () => {
     <div className="w-full max-w-4xl mx-auto px-4 py-6 md:p-8 pb-24">
       {/* Header */}
       <div className="mb-6 md:mb-8">
-        <h2 className="text-2xl md:text-3xl font-cyber font-bold text-white tracking-[0.1em]">
+        <h1 className="text-2xl md:text-3xl font-cyber font-bold text-white tracking-[0.1em]">
           Módulo de Denuncia
-        </h2>
+        </h1>
         <p className="text-[#94a3b8] text-[10px] md:text-[10px] font-cyber uppercase tracking-[0.4em] opacity-60 mt-2">
           Completa el cuestionario y continúa dando click en el botón "Continuar"
         </p>
