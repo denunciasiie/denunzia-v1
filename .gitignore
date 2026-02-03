@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.development
+.env.test
+.env.production
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+data/
+
+# --- PROTECCIÓN ADICIONAL DENUNZIA ---
+# Bloquear herramientas pesadas que detectó Git
+"pgAdmin 4/"
+PostgreSQL/
+
+# Bloquear llaves criptográficas privadas (Vital para RSA-4096)
+server/keys/*.pem
+
+# Bloquear archivos temporales de sistema
+.DS_Store
+Thumbs.db
