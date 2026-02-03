@@ -6,7 +6,7 @@ interface SecurityGatewayProps {
 
 export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) => {
     const [showTorModal, setShowTorModal] = useState(false);
-    const onionAddress = "siiecxxxxxxxxxxxxxxxx.onion"; // Replace with actual .onion address
+    const onionAddress = "https://denunzia.org"; // Dirección segura oficial
 
     // Panic button handler - redirect to Google
     const handlePanic = () => {
@@ -170,7 +170,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                                 <div className="flex gap-4 items-start">
                                     <span className="bg-blue-500 text-white w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-lg shrink-0">2</span>
                                     <div className="w-full">
-                                        <h3 className="text-lg md:text-xl font-black text-slate-50 mb-2">Accede a nuestra dirección .onion</h3>
+                                        <h3 className="text-lg md:text-xl font-black text-slate-50 mb-2">Accede a nuestra plataforma segura</h3>
                                         <p className="text-slate-300 font-medium mb-3">
                                             Una vez instalado TOR Browser, copia y pega esta dirección:
                                         </p>
