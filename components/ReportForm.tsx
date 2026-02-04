@@ -118,12 +118,53 @@ export const ReportForm: React.FC = () => {
       street: '',
       colony: '',
       zipCode: '',
+      municipality: '',
+      state: '',
       references: ''
     },
     narrative: "",
     entities: "",
     files: [] as File[]
   });
+
+
+
+  const handleLocationSelect = async (lat: number, lng: number) => {
+    // 1. Update coordinates immediately
+    setFormData(prev => ({ ...prev, lat, lng }));
+
+    // 2. Reverse Geocoding (OpenStreetMap Nominatim)
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+        headers: {
+          'User-Agent': 'DenunZIA-App/1.0'
+        }
+      });
+      const data = await response.json();
+
+      if (data && data.address) {
+        const addr = data.address;
+        setFormData(prev => ({
+          ...prev,
+          lat,
+          lng,
+          addressDetails: {
+            ...prev.addressDetails,
+            // Map OSM fields to our fields
+            state: addr.state || addr.region || '',
+            municipality: addr.city || addr.town || addr.village || addr.county || '',
+            colony: addr.suburb || addr.neighbourhood || addr.quarter || '',
+            zipCode: addr.postcode || '',
+            // Keep existing street if manually entered, otherwise try to fill but keep it optional/empty implied
+            street: prev.addressDetails.street // Don't overwrite street automatically for privacy unless desired, or maybe fill 'road'? Let's keep manual to avoid overriding user intent or over-specificity.
+          }
+        }));
+      }
+    } catch (error) {
+      console.error("Error obtaining address:", error);
+      // Fail silently or show toast - GPS coords are enough technically
+    }
+  };
 
   const handleSubmit = async () => {
     setErrorMsg(null);
@@ -436,40 +477,77 @@ export const ReportForm: React.FC = () => {
                   <Info size={20} />
                 </div>
                 <p className="text-[10px] font-cyber text-[#8b949e] uppercase tracking-wider leading-relaxed">
-                  <strong className="text-[#ffcc00]">PROTOCOLO GEOGRÁFICO:</strong> El ruteo de GPS automático está desactivado por seguridad. Seleccione manualmente el punto del incidente en el mapa táctico.
+                  <strong className="text-[#ffcc00]">PROTOCOLO GEOGRÁFICO:</strong> Proporcione la ubicación exacta del incidente para una respuesta táctica efectiva.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Estado / Entidad *</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Ciudad de México"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
+                    value={formData.addressDetails.state || ''}
+                    onChange={e => setFormData({ ...formData, addressDetails: { ...formData.addressDetails, state: e.target.value } })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Municipio / Alcaldía *</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Cuauhtémoc"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
+                    value={formData.addressDetails.municipality || ''}
+                    onChange={e => setFormData({ ...formData, addressDetails: { ...formData.addressDetails, municipality: e.target.value } })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Colonia *</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Centro Histórico"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
+                    value={formData.addressDetails.colony}
+                    onChange={e => setFormData({ ...formData, addressDetails: { ...formData.addressDetails, colony: e.target.value } })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Código Postal *</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. 06000"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
+                    value={formData.addressDetails.zipCode}
+                    onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 5);
+                      setFormData({ ...formData, addressDetails: { ...formData.addressDetails, zipCode: val } })
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Calle y Número Exterior *</label>
                 <input
                   type="text"
-                  placeholder="Calle / Referencia Estructural"
-                  className="bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
+                  placeholder="Ej. Av. Reforma 222"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
                   value={formData.addressDetails.street}
                   onChange={e => setFormData({ ...formData, addressDetails: { ...formData.addressDetails, street: e.target.value } })}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                />
-                <input
-                  type="text"
-                  placeholder="Colonia / Zona de Operación"
-                  className="bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
-                  value={formData.addressDetails.colony}
-                  onChange={e => setFormData({ ...formData, addressDetails: { ...formData.addressDetails, colony: e.target.value } })}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck="false"
                 />
               </div>
 
-              <div className="h-[380px] w-full rounded-2xl border border-white/5 overflow-hidden relative shadow-2xl dark-map">
+              <div className="h-[300px] w-full rounded-2xl border border-white/5 overflow-hidden relative shadow-2xl dark-map">
                 <LeafletMap mode="input" onLocationSelect={(lat, lng) => setFormData({ ...formData, lat, lng })} />
                 <div className="absolute top-4 left-4 z-[999] bg-black/60 p-3 rounded-xl border border-white/10 backdrop-blur-md">
                   <div className="flex items-center gap-3">
                     <MapPin size={14} className="text-[#d946ef] animate-pulse" />
                     <span className="text-[9px] font-mono text-white/70">
-                      {formData.lat.toFixed(6)} / {formData.lng.toFixed(6)}
+                      Coordenadas Tácticas: {formData.lat.toFixed(6)} / {formData.lng.toFixed(6)}
                     </span>
                   </div>
                 </div>
@@ -564,6 +642,15 @@ export const ReportForm: React.FC = () => {
             {step < 3 ? (
               <button
                 onClick={() => {
+                  if (step === 2) {
+                    const { state, municipality, colony, street, zipCode } = formData.addressDetails;
+                    if (!state || !municipality || !colony || !street || !zipCode) {
+                      setErrorMsg("Todos los campos de ubicación marcados con * son obligatorios.");
+                      return;
+                    }
+                    setErrorMsg(null); // Clear errors if valid
+                  }
+
                   if (step === 2 && formData.lat === 19.4326 && formData.lng === -99.1332) {
                     if (!confirm("¿Desea usar las coordenadas por defecto?")) return;
                   }
