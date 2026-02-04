@@ -134,35 +134,34 @@ export const ReportForm: React.FC = () => {
     setFormData(prev => ({ ...prev, lat, lng }));
 
     // 2. Reverse Geocoding (OpenStreetMap Nominatim)
+    // Using a more detailed query parameters
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
-        headers: {
-          'User-Agent': 'DenunZIA-App/1.0'
-        }
-      });
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
       const data = await response.json();
 
       if (data && data.address) {
+        console.log("📍 Auto-fill Address:", data.address);
         const addr = data.address;
+
         setFormData(prev => ({
           ...prev,
           lat,
           lng,
           addressDetails: {
             ...prev.addressDetails,
-            // Map OSM fields to our fields
+            // Map OSM fields to our fields with fallbacks
             state: addr.state || addr.region || '',
-            municipality: addr.city || addr.town || addr.village || addr.county || '',
-            colony: addr.suburb || addr.neighbourhood || addr.quarter || '',
+            municipality: addr.city || addr.town || addr.village || addr.county || addr.municipality || '',
+            colony: addr.suburb || addr.neighbourhood || addr.quarter || addr.residential || '',
             zipCode: addr.postcode || '',
-            // Keep existing street if manually entered, otherwise try to fill but keep it optional/empty implied
-            street: prev.addressDetails.street // Don't overwrite street automatically for privacy unless desired, or maybe fill 'road'? Let's keep manual to avoid overriding user intent or over-specificity.
+            // Only update street if it was empty, or if we want to provide a suggestion. 
+            // We'll append it if it looks valid.
+            street: prev.addressDetails.street || (addr.road ? `${addr.road} ${addr.house_number || ''}`.trim() : '')
           }
         }));
       }
     } catch (error) {
       console.error("Error obtaining address:", error);
-      // Fail silently or show toast - GPS coords are enough technically
     }
   };
 
@@ -471,16 +470,33 @@ export const ReportForm: React.FC = () => {
           )}
 
           {step === 2 && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-              <div className="bg-[#ffcc00]/5 border border-[#ffcc00]/20 p-5 rounded-2xl flex items-start gap-4">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="bg-[#ffcc00]/5 border border-[#ffcc00]/20 p-4 rounded-2xl flex items-start gap-4">
                 <div className="p-2 bg-[#ffcc00]/10 rounded-lg text-[#ffcc00]">
                   <Info size={20} />
                 </div>
                 <p className="text-[10px] font-cyber text-[#8b949e] uppercase tracking-wider leading-relaxed">
-                  <strong className="text-[#ffcc00]">PROTOCOLO GEOGRÁFICO:</strong> Proporcione la ubicación exacta del incidente para una respuesta táctica efectiva.
+                  <strong className="text-[#ffcc00]">PROTOCOLO GEOGRÁFICO:</strong>
+                  1. Seleccione el punto en el mapa.
+                  2. Verifique la dirección detectada.
+                  3. Complete manualmente si falta información.
                 </p>
               </div>
 
+              {/* MAPA - Primero en el orden visual para Móvil */}
+              <div className="h-[400px] w-full rounded-2xl border border-white/5 overflow-hidden relative shadow-2xl dark-map">
+                <LeafletMap mode="input" onLocationSelect={handleLocationSelect} />
+                <div className="absolute top-4 left-4 z-[999] bg-black/60 p-3 rounded-xl border border-white/10 backdrop-blur-md pointer-events-none">
+                  <div className="flex items-center gap-3">
+                    <MapPin size={14} className="text-[#d946ef] animate-pulse" />
+                    <span className="text-[9px] font-mono text-white/70">
+                      Lat: {formData.lat.toFixed(5)} / Lng: {formData.lng.toFixed(5)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* CAMPOS DE DIRECCIÓN - Debajo del mapa */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Estado / Entidad *</label>
@@ -531,26 +547,14 @@ export const ReportForm: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Calle y Número Exterior *</label>
+                <label className="text-[10px] font-cyber text-[#d946ef] uppercase ml-1">Calle y Número (Opcional)</label>
                 <input
                   type="text"
-                  placeholder="Ej. Av. Reforma 222"
+                  placeholder="Ej. Av. Reforma 222 (Opcional)"
                   className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-[#e6edf3] outline-none focus:border-[#d946ef] font-cyber transition-all"
                   value={formData.addressDetails.street}
                   onChange={e => setFormData({ ...formData, addressDetails: { ...formData.addressDetails, street: e.target.value } })}
                 />
-              </div>
-
-              <div className="h-[300px] w-full rounded-2xl border border-white/5 overflow-hidden relative shadow-2xl dark-map">
-                <LeafletMap mode="input" onLocationSelect={(lat, lng) => setFormData({ ...formData, lat, lng })} />
-                <div className="absolute top-4 left-4 z-[999] bg-black/60 p-3 rounded-xl border border-white/10 backdrop-blur-md">
-                  <div className="flex items-center gap-3">
-                    <MapPin size={14} className="text-[#d946ef] animate-pulse" />
-                    <span className="text-[9px] font-mono text-white/70">
-                      Coordenadas Tácticas: {formData.lat.toFixed(6)} / {formData.lng.toFixed(6)}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -643,9 +647,11 @@ export const ReportForm: React.FC = () => {
               <button
                 onClick={() => {
                   if (step === 2) {
-                    const { state, municipality, colony, street, zipCode } = formData.addressDetails;
-                    if (!state || !municipality || !colony || !street || !zipCode) {
-                      setErrorMsg("Todos los campos de ubicación marcados con * son obligatorios.");
+                    const { state, municipality, colony, zipCode } = formData.addressDetails;
+
+                    // Solo validamos los campos generales. Calle es opcional.
+                    if (!state || !municipality || !colony || !zipCode) {
+                      setErrorMsg("Por favor complete los campos: Estado, Municipio, Colonia y CP (La calle es opcional).");
                       return;
                     }
                     setErrorMsg(null); // Clear errors if valid
