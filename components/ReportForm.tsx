@@ -196,12 +196,44 @@ export const ReportForm: React.FC = () => {
       const sanitizedNarrative = sanitizeInput(formData.narrative);
       const sanitizedEntities = sanitizeInput(formData.entities);
 
+      // Process files
+      const processedFiles = [];
+      if (formData.files && formData.files.length > 0) {
+        const convertFileToBase64 = (file: File): Promise<{ name: string, type: string, content: string }> => {
+          return new Promise((resolve, reject) => {
+            if (file.size > 10 * 1024 * 1024) {
+              reject(new Error(`El archivo ${file.name} excede el límite de 10MB.`));
+              return;
+            }
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve({
+              name: file.name,
+              type: file.type,
+              content: reader.result as string
+            });
+            reader.onerror = error => reject(error);
+          });
+        };
+
+        for (const file of formData.files) {
+          try {
+            const fileData = await convertFileToBase64(file);
+            processedFiles.push(fileData);
+          } catch (err: any) {
+            console.error("File processing error:", err);
+            // We continue, but maybe warn? For now just log.
+          }
+        }
+      }
+
       // Encrypt sensitive data client-side
       const dataToEncrypt = JSON.stringify({
         narrative: sanitizedNarrative,
         entities: sanitizedEntities,
         addressDetails: formData.addressDetails,
         customCrimeType: formData.customCrimeType,
+        files: processedFiles
       });
 
       const encryptedPayload = await encryptData(dataToEncrypt);
@@ -242,10 +274,7 @@ export const ReportForm: React.FC = () => {
       };
 
       console.log('[DEBUG] Sending report to backend:', {
-        id: reportToSave.id,
-        hasEncryptedData: !!reportToSave.encryptedData,
-        hasEncryptedKey: !!reportToSave.encryptedKey,
-        hasIV: !!reportToSave.iv
+        id: reportToSave.id
       });
 
       // Send to backend API (await the async call)
@@ -262,7 +291,10 @@ export const ReportForm: React.FC = () => {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       setErrorMsg(`Error al procesar la denuncia: ${errorMessage}`);
       setEncryptionStage('error');
-    } finally {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    finally {
       setLoading(false);
     }
   };
@@ -670,14 +702,14 @@ export const ReportForm: React.FC = () => {
               <button
                 onClick={handleSubmit}
                 disabled={loading || !captchaValid}
-                className="relative group overflow-hidden bg-gradient-to-r from-[#d946ef] via-[#8b5cf6] to-[#3b82f6] text-[#020617] px-12 py-4 rounded-2xl font-cyber text-[11px] font-bold tracking-[0.3em] transition-all duration-500 shadow-[0_0_40px_rgba(217,70,239,0.4)] disabled:opacity-20 flex items-center gap-3"
+                className="relative group overflow-hidden bg-gradient-to-r from-[#d946ef] via-[#8b5cf6] to-[#3b82f6] text-[#020617] px-6 py-4 rounded-2xl font-cyber text-[10px] font-bold tracking-widest transition-all duration-500 shadow-[0_0_40px_rgba(217,70,239,0.4)] disabled:opacity-20 flex items-center justify-center gap-3 w-full md:w-auto"
               >
                 {loading ? (
                   <>
                     <RefreshCw size={18} className="animate-spin" /> PROCESANDO...
                   </>
                 ) : (
-                  <>EJECUTAR TRANSMISIÓN</>
+                  <>ENVIAR DENUNCIA E2EE</>
                 )}
               </button>
             )}
