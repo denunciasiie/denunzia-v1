@@ -493,6 +493,18 @@ app.use((err, req, res, next) => {
 
 // ==================== SERVER STARTUP ====================
 
+// Start server immediately to satisfy Render port scan
+const server = app.listen(PORT, () => {
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log(`🚀 SIIEC Backend Server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 API: http://localhost:${PORT}/api`);
+    console.log(`💚 Health: http://localhost:${PORT}/api/health`);
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('');
+});
+
 const startServer = async () => {
     try {
         // Check database connection
@@ -500,13 +512,13 @@ const startServer = async () => {
         const dbHealthy = await checkDatabaseHealth();
 
         if (!dbHealthy) {
-            console.error('❌ Database connection failed. Please check your configuration.');
-            process.exit(1);
+            console.error('❌ Database connection failed initially. Will retry in background...');
+            // Do not exit, allow server to stay alive for debugging
+        } else {
+            // Setup database schema (creates tables if they don't exist)
+            console.log('🔧 Setting up database schema...');
+            await setupDatabase();
         }
-
-        // Setup database schema (creates tables if they don't exist)
-        console.log('🔧 Setting up database schema...');
-        await setupDatabase();
 
         // Check decryption availability
         if (isDecryptionAvailable()) {
@@ -515,21 +527,9 @@ const startServer = async () => {
             console.warn('⚠️ Decryption service unavailable - reports will be stored encrypted only');
         }
 
-        // Start server
-        app.listen(PORT, () => {
-            console.log('');
-            console.log('═══════════════════════════════════════════════════════');
-            console.log(`🚀 SIIEC Backend Server running on port ${PORT}`);
-            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`🔗 API: http://localhost:${PORT}/api`);
-            console.log(`💚 Health: http://localhost:${PORT}/api/health`);
-            console.log('═══════════════════════════════════════════════════════');
-            console.log('');
-        });
-
     } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
+        console.error('❌ Error during startup sequence:', error);
+        // Do not exit
     }
 };
 
