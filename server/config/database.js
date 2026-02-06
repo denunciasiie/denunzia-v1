@@ -9,15 +9,27 @@ const { Pool } = pg;
  * PostgreSQL Connection Pool
  * Manages database connections efficiently
  */
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+const poolConfig = {
     ssl: process.env.NODE_ENV === 'production' ? {
         rejectUnauthorized: false
     } : false,
-    max: 20, // Maximum number of clients in the pool
+    max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
-});
+};
+
+// Prefer individual variables to avoid URL encoding issues with passwords
+if (process.env.DB_HOST) {
+    poolConfig.host = process.env.DB_HOST;
+    poolConfig.port = process.env.DB_PORT || 5432;
+    poolConfig.user = process.env.DB_USER;
+    poolConfig.password = process.env.DB_PASSWORD;
+    poolConfig.database = process.env.DB_NAME;
+} else {
+    poolConfig.connectionString = process.env.DATABASE_URL;
+}
+
+const pool = new Pool(poolConfig);
 
 // Test connection on startup
 pool.on('connect', () => {
