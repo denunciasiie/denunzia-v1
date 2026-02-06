@@ -18,7 +18,7 @@ console.log('----------------------------------------');
 // Initialize postgres.js client
 // It handles connection pooling automatically
 const sql = postgres(connectionString, {
-    ssl: 'require', // Force SSL
+    ssl: { rejectUnauthorized: false }, // Allow self-signed certs (Supabase Pooler)
     max: 20,        // Max connections
     idle_timeout: 30,
     connect_timeout: 30, // 30s timeout
