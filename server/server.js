@@ -8,6 +8,9 @@ import { setupDatabase, checkDatabaseHealth, getDatabaseStats } from './scripts/
 import { decryptData, validatePayloadSize, sanitizeDecryptedData, isDecryptionAvailable } from './services/decryptionService.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swaggerConfig.js';
+import multer from 'multer';
+import { uploadToPinata } from './services/pinataService.js';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -63,19 +66,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
 ];
 
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-            callback(null, true);
-        } else {
-            console.warn('[CORS] Blocked origin:', origin);
-            // detailed error for debugging
-            callback(null, true); // TEMPORARY: Allow all to fix "Network Error"
-            // callback(new Error('Not allowed by CORS')); 
-        }
-    },
+    origin: true, // TEMPORARY: Allow all origins to debug production connectivity
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -176,10 +167,8 @@ app.get('/api/stats', async (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-// Multer setup for file uploads
-import multer from 'multer';
-import { uploadToPinata } from './services/pinataService.js';
-import crypto from 'crypto';
+// Multer setup for file uploads is now at the top.
+// Middleware configuration below:
 
 // Memory storage to process files before upload
 const upload = multer({
