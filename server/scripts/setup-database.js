@@ -43,7 +43,17 @@ CREATE TABLE IF NOT EXISTS reports (
     assigned_to VARCHAR(100),
     
     CONSTRAINT valid_trust_score CHECK (trust_score >= 0 AND trust_score <= 1)
+    CONSTRAINT valid_trust_score CHECK (trust_score >= 0 AND trust_score <= 1)
 );
+
+-- Enable RLS on reports
+ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
+
+-- Allow public inserts (anyone can submit a report)
+-- Note: The backend connects as a superuser/admin so it bypasses RLS, 
+-- but this protects the table from direct public API access if exposed via PostgREST
+CREATE POLICY IF NOT EXISTS "Enable insert for everyone" ON reports FOR INSERT WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "Enable read for admins only" ON reports FOR SELECT USING (false); -- Implicitly denies public read
 
 -- Admin Users Table
 CREATE TABLE IF NOT EXISTS admin_users (
