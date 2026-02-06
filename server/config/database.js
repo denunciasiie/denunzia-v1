@@ -4,6 +4,10 @@ import { URL } from 'url';
 
 dotenv.config();
 
+// CRITICAL: Disable TLS certificate validation for Supabase pooler
+// The pg driver ignores Pool config SSL settings when using connectionString
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const { Pool } = pg;
 
 // Parse and log the connection details for debugging
