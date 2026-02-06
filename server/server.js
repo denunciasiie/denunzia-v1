@@ -199,15 +199,18 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
 
         let body = req.body;
 
-        // If coming from FormData, some fields might be JSON strings
-        // typically the client will send 'payload' as a JSON string containing the report data
+        // Determine if request is multipart (files) or JSON
         if (req.body.payload) {
+            // Multipart/Form-Data: Metadata is in 'payload' string
             try {
                 body = JSON.parse(req.body.payload);
             } catch (e) {
-                console.error('Failed to parse payload JSON', e);
-                return res.status(400).json({ error: 'Invalid JSON payload' });
+                console.error('Failed to parse payload JSON from FormData:', e);
+                return res.status(400).json({ error: 'Invalid JSON payload in FormData' });
             }
+        } else {
+            // Standard JSON request
+            body = req.body;
         }
 
         const {
