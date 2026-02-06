@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS reports (
     status VARCHAR(50) DEFAULT 'pending',
     assigned_to VARCHAR(100),
     
-    CONSTRAINT valid_trust_score CHECK (trust_score >= 0 AND trust_score <= 1)
+    
     CONSTRAINT valid_trust_score CHECK (trust_score >= 0 AND trust_score <= 1)
 );
 
