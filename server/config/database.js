@@ -10,12 +10,12 @@ const { Pool } = pg;
  * Manages database connections efficiently
  */
 const poolConfig = {
-    ssl: process.env.NODE_ENV === 'production' ? {
+    ssl: (process.env.NODE_ENV === 'production' || process.env.DB_HOST?.includes('supabase')) ? {
         rejectUnauthorized: false
     } : false,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 10000, // Increased timeout to 10s for slower connections
 };
 
 // Prefer individual variables to avoid URL encoding issues with passwords
