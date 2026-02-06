@@ -17,6 +17,7 @@ const poolConfig = {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 30000, // 30 seconds to connect
+    family: 4, // Force IPv4 to avoid ENETUNREACH on Render (IPv6 issues)
 };
 
 // Prefer individual variables to avoid URL encoding issues with passwords
@@ -29,6 +30,14 @@ if (process.env.DB_HOST) {
 } else {
     poolConfig.connectionString = process.env.DATABASE_URL;
 }
+
+console.log('----------------------------------------');
+console.log('🔌 Database Config Check:');
+console.log(`   Host: ${poolConfig.host || 'Using connectionString'}`);
+console.log(`   User: ${poolConfig.user || 'Unknown'}`);
+console.log(`   Port: ${poolConfig.port || 'Default'}`);
+console.log(`   DB:   ${poolConfig.database || 'Default'}`);
+console.log('----------------------------------------');
 
 const pool = new Pool(poolConfig);
 
