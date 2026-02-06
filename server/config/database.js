@@ -1,50 +1,51 @@
-import postgres from 'postgres';
+import pg from 'pg';
 import dotenv from 'dotenv';
+import { URL } from 'url';
 
 dotenv.config();
 
+const { Pool } = pg;
+
+// Parse and log the connection details for debugging
+if (process.env.DATABASE_URL) {
+    try {
+        const dbUrl = new URL(process.env.DATABASE_URL);
+        console.log('----------------------------------------');
+        console.log('🔌 Database Config Check (pg):');
+        console.log(`   Host: ${dbUrl.hostname}`);
+        console.log(`   Port: ${dbUrl.port} (Should be 6543 for Pooler)`);
+        console.log(`   User: ${dbUrl.username}`);
+        console.log('----------------------------------------');
+    } catch (e) {
+        console.error('⚠️ Could not parse DATABASE_URL for logging:', e.message);
+    }
+}
+
 /**
- * PostgreSQL Connection (using postgres.js)
- * Replaces 'pg' pool for better IPv6/IPv4 handling and connection stability.
+ * PostgreSQL Connection Pool (using pg)
+ * Configured for Supabase Transaction Pooler compatibility
  */
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Required for Supabase (self-signed certs in pooler)
+    },
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+    family: 4 // CRITICAL: Force IPv4 to prevent ENETUNREACH on Render
+});
 
-const connectionString = process.env.DATABASE_URL;
-
-console.log('----------------------------------------');
-console.log('🔌 Database Config Check (postgres.js):');
-console.log(`   URL Provided: ${!!connectionString}`);
-console.log('----------------------------------------');
-
-// Initialize postgres.js client
-// It handles connection pooling automatically
-const sql = postgres(connectionString, {
-    ssl: { rejectUnauthorized: false }, // Allow self-signed certs (Supabase Pooler)
-    max: 20,        // Max connections
-    idle_timeout: 30,
-    connect_timeout: 30, // 30s timeout
-    // debug: (conn, query, params) => console.log('[DB]', query) // Uncomment for debug
+pool.on('error', (err) => {
+    console.error('Unexpected database error:', err);
 });
 
 /**
- * Execute a query compatible with 'pg' style (text, params)
- * Uses sql.unsafe() to allow raw query strings from existing code.
+ * Execute a query
  */
 export const query = async (text, params) => {
-    const start = Date.now();
     try {
-        // postgres.js returns an array-like object extended with command details
-        const result = await sql.unsafe(text, params);
-
-        const duration = Date.now() - start;
-        // console.log('Executed query', { text, duration, rows: result.count });
-
-        // Map postgres.js result to 'pg' result format expected by the app
-        return {
-            rows: result,
-            rowCount: result.count,
-            command: result.command,
-            fields: result.columns
-        };
+        return await pool.query(text, params);
     } catch (error) {
         console.error('Database query error:', error);
         throw error;
@@ -52,29 +53,22 @@ export const query = async (text, params) => {
 };
 
 /**
- * Mock getClient for compatibility.
- * 'postgres.js' handles pooling internally, so we don't need to manually checkout/release clients.
- * This returns a wrapper that mimics the pg client interface.
+ * Get a client from the pool for transactions
  */
 export const getClient = async () => {
-    // Return a proxy object that mimics a pg client
-    return {
-        query: async (text, params) => {
-            return await query(text, params);
-        },
-        release: () => {
-            // No-op: postgres.js manages connections
-        },
-        lastQuery: null
-    };
+    const client = await pool.connect();
+    const query = client.query;
+    const release = client.release;
+
+    // Monkey patch query to track last query if needed
+    // Simple implementation for now
+    client.query = (...args) => client.query(...args);
+
+    return client;
 };
 
-/**
- * Close all database connections
- */
 export const closePool = async () => {
-    await sql.end();
-    console.log('Database connections closed');
+    await pool.end();
 };
 
-export default sql;
+export default pool;
