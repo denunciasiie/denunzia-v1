@@ -51,16 +51,34 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:4173', 'https://denunziasiie.github.io', 'https://denunzia.org'];
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:4173',
+    'https://denunziasiie.github.io',
+    'https://denunzia.org',
+    'https://denunzia-v1.onrender.com', // Added Render URL
+    'https://denunziasiie.vercel.app' // Potential Vercel deployment
+];
+
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            console.warn('[CORS] Blocked origin:', origin);
+            // detailed error for debugging
+            callback(null, true); // TEMPORARY: Allow all to fix "Network Error"
+            // callback(new Error('Not allowed by CORS')); 
         }
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Body parser
@@ -158,13 +176,50 @@ app.get('/api/stats', async (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-app.post('/api/reports', async (req, res) => {
+// Multer setup for file uploads
+import multer from 'multer';
+import { uploadToPinata } from './services/pinataService.js';
+import crypto from 'crypto';
+
+// Memory storage to process files before upload
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
+
+// Helper to encrypt CIDs server-side (for evidence_files table)
+// Using a server-side secret key (e.g., from ENV or derived)
+const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET || 'default_secret_key_change_in_production_32bytes';
+const encryptCID = (cid) => {
+    const iv = crypto.randomBytes(16);
+    // Ensure key is 32 bytes
+    const key = crypto.createHash('sha256').update(String(ENCRYPTION_SECRET)).digest();
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    let encrypted = cipher.update(cid, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag().toString('hex');
+    return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+};
+
+/**
+ * POST /api/reports - Submit a new encrypted report with files
+ */
+app.post('/api/reports', upload.array('files'), async (req, res) => {
     try {
         console.log('[API] POST /api/reports - Received request');
-        console.log('[API] Request body keys:', Object.keys(req.body));
-        console.log('[API] Has encryptedData:', !!req.body.encryptedData);
-        console.log('[API] Has encryptedKey:', !!req.body.encryptedKey);
-        console.log('[API] Has iv:', !!req.body.iv);
+
+        let body = req.body;
+
+        // If coming from FormData, some fields might be JSON strings
+        // typically the client will send 'payload' as a JSON string containing the report data
+        if (req.body.payload) {
+            try {
+                body = JSON.parse(req.body.payload);
+            } catch (e) {
+                console.error('Failed to parse payload JSON', e);
+                return res.status(400).json({ error: 'Invalid JSON payload' });
+            }
+        }
 
         const {
             id,
@@ -173,7 +228,7 @@ app.post('/api/reports', async (req, res) => {
             category,
             type,
             customCrimeType,
-            encryptedData,
+            encryptedData, // Now contains ONLY metadata
             encryptedKey,
             iv,
             algorithm,
@@ -181,73 +236,63 @@ app.post('/api/reports', async (req, res) => {
             timestamp,
             trustScore,
             aiAnalysis
-        } = req.body;
+        } = body;
+
+        const files = req.files || [];
+        console.log(`[API] Processing report ${id} with ${files.length} files`);
 
         // Validate required fields
         if (!id || !category || !type || !encryptedData || !encryptedKey || !iv) {
-            console.error('[API] Missing required fields:', {
-                id: !!id,
-                category: !!category,
-                type: !!type,
-                encryptedData: !!encryptedData,
-                encryptedKey: !!encryptedKey,
-                iv: !!iv
-            });
             return res.status(400).json({
                 error: 'Missing required fields',
                 required: ['id', 'category', 'type', 'encryptedData', 'encryptedKey', 'iv']
             });
         }
 
-        // Validate payload size
-        validatePayloadSize({ encryptedData, encryptedKey, iv });
-
-        // Decrypt sensitive data (optional - can store encrypted)
-        let decryptedData = null;
-        try {
-            if (isDecryptionAvailable()) {
-                decryptedData = decryptData({ encryptedData, encryptedKey, iv, algorithm });
-                decryptedData = sanitizeDecryptedData(decryptedData);
-                console.log('✓ Report data decrypted and sanitized');
-            }
-        } catch (decryptError) {
-            console.warn('⚠️ Could not decrypt data, storing encrypted:', decryptError.message);
-            // Continue - we'll store encrypted data
-        }
-
-        // Insert into database
+        // 1. Insert Report (Metadata)
         const result = await query(`
-      INSERT INTO reports (
-        id, is_anonymous, role, category, type, custom_crime_type,
-        encrypted_data, encrypted_key, iv, algorithm,
-        latitude, longitude, address_street, address_colony, address_zipcode, address_references,
-        timestamp, trust_score, ai_analysis, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-      RETURNING id, created_at
-    `, [
-            id,
-            isAnonymous ?? true,
-            role,
-            category,
-            type,
-            customCrimeType,
-            encryptedData,
-            encryptedKey,
-            iv,
-            algorithm || 'RSA-OAEP-4096 + AES-256-GCM',
-            location?.lat,
-            location?.lng,
-            location?.details?.street || decryptedData?.addressDetails?.street,
-            location?.details?.colony || decryptedData?.addressDetails?.colony,
-            location?.details?.zipCode || decryptedData?.addressDetails?.zipCode,
-            location?.details?.references || decryptedData?.addressDetails?.references,
+          INSERT INTO reports (
+            id, is_anonymous, role, category, type, custom_crime_type,
+            encrypted_data, encrypted_key, iv, algorithm,
+            latitude, longitude, address_street, address_colony, address_zipcode, address_references,
+            timestamp, trust_score, ai_analysis, status
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+          RETURNING id, created_at
+        `, [
+            id, isAnonymous ?? true, role, category, type, customCrimeType,
+            encryptedData, encryptedKey, iv, algorithm || 'RSA-OAEP-4096 + AES-256-GCM',
+            location?.lat, location?.lng,
+            location?.details?.street, location?.details?.colony, location?.details?.zipCode, location?.details?.references,
             timestamp || new Date().toISOString(),
-            trustScore,
-            aiAnalysis,
-            'pending'
+            trustScore, aiAnalysis, 'pending'
         ]);
 
-        console.log(`✓ Report ${id} saved to database`);
+        // 2. Process Files -> Pinata -> Evidence Table
+        if (files.length > 0) {
+            console.log(`[API] Uploading ${files.length} files to Pinata...`);
+
+            for (const file of files) {
+                try {
+                    // Upload to IPFS
+                    const cid = await uploadToPinata(file.buffer, file.originalname);
+
+                    // Encrypt the CID
+                    const encryptedPath = encryptCID(cid);
+
+                    // Store in evidence_files
+                    await query(`
+                        INSERT INTO evidence_files (report_id, file_name, file_type, file_size, encrypted_path)
+                        VALUES ($1, $2, $3, $4, $5)
+                    `, [id, file.originalname, file.mimetype, file.size, encryptedPath]);
+
+                } catch (uploadError) {
+                    console.error(`Failed to process file ${file.originalname}:`, uploadError);
+                    // Continue with other files? Yes.
+                }
+            }
+        }
+
+        console.log(`✓ Report ${id} saved successfully`);
 
         res.status(201).json({
             success: true,

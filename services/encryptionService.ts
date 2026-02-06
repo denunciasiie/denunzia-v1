@@ -141,10 +141,10 @@ export async function encryptData(plaintext: string): Promise<{
             throw new Error("Cannot encrypt empty data");
         }
 
-        // Limit size to prevent memory overflow (max 1MB)
-        const maxSize = 1024 * 1024; // 1MB
+        // Limit size to prevent memory overflow (max 50MB to support files)
+        const maxSize = 50 * 1024 * 1024; // 50MB
         if (new Blob([plaintext]).size > maxSize) {
-            throw new Error("Data size exceeds maximum allowed (1MB)");
+            throw new Error("Data size exceeds maximum allowed (50MB)");
         }
 
         // Step 1: Import RSA public key

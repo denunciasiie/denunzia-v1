@@ -6,17 +6,39 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 /**
  * Saves a report to the backend API (PostgreSQL database).
  */
-export const saveReportToDB = async (report: ReportData): Promise<void> => {
+/**
+ * Saves a report to the backend API (PostgreSQL database).
+ * Supports both JSON (no files) and Multipart/Form-Data (with files/Pinata).
+ */
+export const saveReportToDB = async (report: ReportData, files: File[] = []): Promise<void> => {
   try {
     console.log('[DB] Sending report to API:', API_URL);
     console.log('[DB] Report ID:', report.id);
 
+    let body: BodyInit;
+    const headers: HeadersInit = {};
+
+    if (files.length > 0) {
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append('payload', JSON.stringify(report));
+
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      body = formData;
+      // Do NOT set Content-Type header for FormData, browser sets it with boundary
+    } else {
+      // Use standard JSON for metadata only
+      body = JSON.stringify(report);
+      headers['Content-Type'] = 'application/json';
+    }
+
     const response = await fetch(`${API_URL}/api/reports`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(report),
+      headers: headers,
+      body: body,
     });
 
     console.log('[DB] Response status:', response.status);

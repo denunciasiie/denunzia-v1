@@ -196,44 +196,13 @@ export const ReportForm: React.FC = () => {
       const sanitizedNarrative = sanitizeInput(formData.narrative);
       const sanitizedEntities = sanitizeInput(formData.entities);
 
-      // Process files
-      const processedFiles = [];
-      if (formData.files && formData.files.length > 0) {
-        const convertFileToBase64 = (file: File): Promise<{ name: string, type: string, content: string }> => {
-          return new Promise((resolve, reject) => {
-            if (file.size > 10 * 1024 * 1024) {
-              reject(new Error(`El archivo ${file.name} excede el límite de 10MB.`));
-              return;
-            }
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve({
-              name: file.name,
-              type: file.type,
-              content: reader.result as string
-            });
-            reader.onerror = error => reject(error);
-          });
-        };
-
-        for (const file of formData.files) {
-          try {
-            const fileData = await convertFileToBase64(file);
-            processedFiles.push(fileData);
-          } catch (err: any) {
-            console.error("File processing error:", err);
-            // We continue, but maybe warn? For now just log.
-          }
-        }
-      }
-
-      // Encrypt sensitive data client-side
+      // Encrypt sensitive data client-side (WITHOUT FILES)
       const dataToEncrypt = JSON.stringify({
         narrative: sanitizedNarrative,
         entities: sanitizedEntities,
         addressDetails: formData.addressDetails,
         customCrimeType: formData.customCrimeType,
-        files: processedFiles
+        files: [] // Empty files array in encrypted blob, as files are sent separately
       });
 
       const encryptedPayload = await encryptData(dataToEncrypt);
@@ -247,7 +216,7 @@ export const ReportForm: React.FC = () => {
       }
 
       // Prepare report data for backend API
-      const reportToSave: any = {
+      const reportMetadata: any = {
         id: uniqueId,
         isAnonymous: formData.isAnonymous,
         role: formData.role,
@@ -274,11 +243,12 @@ export const ReportForm: React.FC = () => {
       };
 
       console.log('[DEBUG] Sending report to backend:', {
-        id: reportToSave.id
+        id: reportMetadata.id,
+        filesCount: formData.files.length
       });
 
-      // Send to backend API (await the async call)
-      await saveReportToDB(reportToSave);
+      // Send to backend API (await the async call) with files separately
+      await saveReportToDB(reportMetadata, formData.files);
 
       console.log('[SUCCESS] Report saved to database');
 
@@ -653,9 +623,15 @@ export const ReportForm: React.FC = () => {
                     <span className="text-[9px] text-[#8b949e] mt-2 uppercase">Fotos, Video, Audio, Documentos</span>
 
                     {formData.files.length > 0 && (
-                      <div className="mt-6 flex flex-wrap gap-2 justify-center">
-                        {formData.files.map((_, i) => (
-                          <div key={i} className="w-2 h-2 rounded-full bg-[#d946ef] animate-pulse"></div>
+                      <div className="mt-6 w-full space-y-2">
+                        {formData.files.map((file, i) => (
+                          <div key={i} className="flex items-center justify-between p-2 bg-white/5 rounded-lg border border-white/5">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <FileText size={16} className="text-[#d946ef] flex-shrink-0" />
+                              <span className="text-[10px] font-cyber text-white truncate max-w-[150px]">{file.name}</span>
+                            </div>
+                            <span className="text-[9px] font-mono text-[#8b949e]">{(file.size / 1024).toFixed(1)} KB</span>
+                          </div>
                         ))}
                       </div>
                     )}
