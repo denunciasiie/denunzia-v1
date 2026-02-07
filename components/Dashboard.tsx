@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LeafletMap } from './LeafletMap';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Filter } from 'lucide-react';
+import { Filter, TrendingUp, AlertCircle } from 'lucide-react';
 
 // Mock Data
 const mockData = [
@@ -13,85 +13,143 @@ const mockData = [
 ];
 
 const statsData = [
-  { name: 'Corrupción', count: 120, color: '#8b5cf6' }, // Violet
-  { name: 'Alto Impacto', count: 85, color: '#d946ef' }, // Fuchsia
-  { name: 'Común', count: 230, color: '#3b82f6' }, // Blue
+  { name: 'Corrupción', count: 120, color: '#7c3aed' }, // Purple
+  { name: 'Alto Impacto', count: 85, color: '#d946ef' }, // Pink
+  { name: 'Común', count: 230, color: '#6366f1' }, // Indigo
 ];
 
 export const Dashboard: React.FC = () => {
   const [minTrust, setMinTrust] = useState(0.7);
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto md:overflow-hidden p-4 md:p-6 gap-6 bg-transparent text-[#f8fafc]">
-      <header className="mb-2 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-cyber font-bold tracking-wider text-[#d946ef] drop-shadow-[0_0_15px_rgba(217,70,239,0.3)]">
-            INTELIGENCIA ESTRATÉGICA
-          </h1>
-          <p className="text-[#94a3b8] mt-1 text-xs md:text-sm uppercase tracking-widest font-cyber opacity-70">
-            Monitoreo Global de Incidencia Delictiva Agregada
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] p-4 md:p-6">
+      {/* Header */}
+      <header className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1e293b] mb-2">
+          Mapa de Reportes
+        </h1>
+        <p className="text-[#64748b] text-sm">
+          Visualización agregada de denuncias anónimas
+        </p>
       </header>
 
       {/* Dashboard Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 overflow-y-auto md:overflow-hidden pb-20 md:pb-0" aria-label="Panel de Métricas">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
         {/* Map Section - Occupies 3 columns */}
-        <article className="lg:col-span-3 glass-effect rounded-2xl overflow-hidden border border-white/10 flex flex-col relative group h-[500px] md:h-auto">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#d946ef] via-[#8b5cf6] to-[#3b82f6] opacity-50"></div>
-
-          <div className="p-4 bg-black/40 border-b border-white/5 flex flex-col md:flex-row justify-between items-center z-10 backdrop-blur-md gap-4">
-            <div className="flex items-center gap-3 text-xs font-cyber text-[#d946ef] w-full md:w-auto">
-              <div className="w-2 h-2 rounded-full bg-[#d946ef] animate-pulse"></div>
-              <span>VISUALIZACIÓN K-ANONIMATO</span>
+        <div className="lg:col-span-3 bg-white rounded-3xl overflow-hidden shadow-xl">
+          {/* Map Header */}
+          <div className="p-4 bg-gradient-to-r from-[#7c3aed] to-[#6366f1] text-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+              <span className="text-sm font-bold">Mapa en Tiempo Real</span>
+            </div>
+            <div className="text-xs bg-white/20 px-3 py-1 rounded-full">
+              {mockData.length} reportes
             </div>
           </div>
 
-          <div className="flex-1 relative z-0 dark-map min-h-[300px]">
+          {/* Map Container */}
+          <div className="h-[400px] md:h-[500px] relative">
             <LeafletMap mode="view" points={mockData} />
 
-            {/* Map Overlay HUD */}
-            <div className="absolute top-4 left-4 pointer-events-none md:top-6 md:left-6">
-              <div className="bg-black/80 backdrop-blur-xl p-3 md:p-5 rounded-2xl border border-white/10 shadow-2xl">
-                <h2 className="text-[10px] font-cyber text-[#94a3b8] mb-3 md:mb-4 uppercase tracking-tighter">Firma Digital Estructural</h2>
-                <div className="space-y-2 md:space-y-3">
-                  <div className="flex items-center gap-3 text-[10px] font-cyber">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6]"></div>
-                    <span className="text-white/80">CORRUPCIÓN</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px] font-cyber">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#d946ef] shadow-[0_0_10px_#d946ef]"></div>
-                    <span className="text-white/80">ALTO IMPACTO</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px] font-cyber">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-[0_0_10px_#3b82f6]"></div>
-                    <span className="text-white/80">DELITO COMÚN</span>
-                  </div>
+            {/* Map Legend */}
+            <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg">
+              <h3 className="text-xs font-bold text-[#64748b] mb-3 uppercase">
+                Categorías
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-[#7c3aed]"></div>
+                  <span className="text-xs text-[#1e293b]">Corrupción</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-[#d946ef]"></div>
+                  <span className="text-xs text-[#1e293b]">Alto Impacto</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-[#6366f1]"></div>
+                  <span className="text-xs text-[#1e293b]">Delito Común</span>
                 </div>
               </div>
             </div>
-          </div>
-        </article>
 
-        {/* Info & Stats Section - 1 column */}
-        <aside className="flex flex-col gap-6 h-full overflow-visible md:overflow-y-auto custom-scrollbar pr-0 md:pr-1">
+            {/* Privacy Notice */}
+            <div className="absolute bottom-4 right-4 bg-amber-50 border-2 border-amber-200 p-3 rounded-xl shadow-lg max-w-xs">
+              <div className="flex items-start gap-2">
+                <AlertCircle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <strong>Privacidad:</strong> Las ubicaciones son aproximadas para proteger el anonimato.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Sidebar - 1 column */}
+        <aside className="flex flex-col gap-6">
+
+          {/* Stats Summary Card */}
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-[#7c3aed]/10 rounded-xl">
+                <TrendingUp size={20} className="text-[#7c3aed]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[#1e293b]">Estadísticas</h2>
+                <p className="text-xs text-[#64748b]">Últimos 30 días</p>
+              </div>
+            </div>
+
+            {/* Total Reports */}
+            <div className="bg-gradient-to-br from-[#7c3aed] to-[#6366f1] rounded-2xl p-6 mb-6 text-white">
+              <p className="text-sm opacity-90 mb-2">Total de Reportes</p>
+              <p className="text-4xl font-bold">
+                {statsData.reduce((acc, curr) => acc + curr.count, 0)}
+              </p>
+            </div>
+
+            {/* Stats List */}
+            <div className="space-y-4">
+              {statsData.map((stat, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: stat.color }}
+                    ></div>
+                    <span className="text-sm font-medium text-[#1e293b]">{stat.name}</span>
+                  </div>
+                  <span className="text-lg font-bold text-[#1e293b]">{stat.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Chart Card */}
-          <article className="glass-effect p-6 rounded-2xl border border-white/10 flex flex-col flex-1 min-h-[300px]">
-            <h2 className="text-xs font-cyber font-bold mb-6 flex items-center gap-3 text-[#d946ef]">
-              <Filter size={14} /> DISTRIBUCIÓN
-            </h2>
-            <div className="flex-1 h-[180px]">
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <div className="flex items-center gap-2 mb-6">
+              <Filter size={16} className="text-[#7c3aed]" />
+              <h2 className="text-sm font-bold text-[#1e293b]">Distribución</h2>
+            </div>
+
+            <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statsData} layout="vertical" margin={{ top: 0, right: 20, left: -20, bottom: 0 }}>
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" hide />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#020617', borderColor: 'rgba(255,255,255,0.1)', color: '#f8fafc', borderRadius: '12px', fontSize: '10px', fontFamily: 'Orbitron' }}
-                    cursor={{ fill: 'rgba(217, 70, 239, 0.05)' }}
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      borderColor: '#e2e8f0',
+                      color: '#1e293b',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    }}
+                    cursor={{ fill: 'rgba(124, 58, 237, 0.05)' }}
                   />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24}>
+                  <Bar dataKey="count" radius={[0, 8, 8, 0]} barSize={32}>
                     {statsData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.9} />
                     ))}
@@ -99,18 +157,20 @@ export const Dashboard: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-4 space-y-2.5">
-              {statsData.map((s, i) => (
-                <div key={i} className="flex justify-between items-center text-[10px] font-cyber">
-                  <span className="text-[#94a3b8]">{s.name}</span>
-                  <span className="text-white font-bold">{s.count}</span>
-                </div>
-              ))}
-            </div>
-          </article>
+          </div>
+
+          {/* Info Card */}
+          <div className="bg-gradient-to-br from-[#7c3aed]/10 to-[#6366f1]/10 border-2 border-[#7c3aed]/20 rounded-3xl p-6">
+            <h3 className="text-sm font-bold text-[#7c3aed] mb-3">
+              ℹ️ Información
+            </h3>
+            <p className="text-xs text-[#64748b] leading-relaxed">
+              Este mapa muestra denuncias agregadas y anonimizadas. No se almacenan datos personales ni ubicaciones exactas.
+            </p>
+          </div>
 
         </aside>
-      </section>
+      </div>
     </div>
   );
 };

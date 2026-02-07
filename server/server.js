@@ -194,6 +194,73 @@ const encryptCID = (cid) => {
 };
 
 /**
+ * GET /api/geocode/reverse - Reverse geocoding proxy to avoid CORS
+ */
+app.get('/api/geocode/reverse', async (req, res) => {
+    try {
+        const { lat, lon } = req.query;
+
+        if (!lat || !lon) {
+            return res.status(400).json({ error: 'Missing lat or lon parameters' });
+        }
+
+        // Fetch from Nominatim
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+        const response = await fetch(nominatimUrl, {
+            headers: {
+                'User-Agent': 'DenunZIA/1.0 (https://denunzia.org)',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Nominatim API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        res.json(data);
+
+    } catch (error) {
+        console.error('Geocoding error:', error);
+        res.status(500).json({ error: 'Geocoding service unavailable' });
+    }
+});
+
+/**
+ * GET /api/geocode/search - Geocoding search proxy to avoid CORS
+ */
+app.get('/api/geocode/search', async (req, res) => {
+    try {
+        const { q, limit = 5 } = req.query;
+
+        if (!q) {
+            return res.status(400).json({ error: 'Missing query parameter' });
+        }
+
+        const query = encodeURIComponent(q);
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=mx&addressdetails=1&limit=${limit}`;
+
+        const response = await fetch(nominatimUrl, {
+            headers: {
+                'User-Agent': 'DenunZIA/1.0 (https://denunzia.org)',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Nominatim API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        res.json(data);
+
+    } catch (error) {
+        console.error('Search geocoding error:', error);
+        res.status(500).json({ error: 'Search service unavailable' });
+    }
+});
+
+/**
  * POST /api/reports - Submit a new encrypted report with files
  */
 app.post('/api/reports', upload.array('files'), async (req, res) => {

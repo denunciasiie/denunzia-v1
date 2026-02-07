@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Circle, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import { Search, Loader2, MapPin, Target, Crosshair } from 'lucide-react';
@@ -22,9 +22,11 @@ interface MapProps {
   mode: 'input' | 'view';
   onLocationSelect?: (lat: number, lng: number) => void;
   points?: { lat: number; lng: number; intensity: number; category: string }[];
+  initialCenter?: { lat: number; lng: number };
 }
 
-const MapClickHandler = ({ onSelect }: { onSelect: (lat: number, lng: number) => void }) => {
+// Memoized MapClickHandler
+const MapClickHandler = React.memo(({ onSelect }: { onSelect: (lat: number, lng: number) => void }) => {
   const map = useMap();
   useMapEvents({
     click(e) {
@@ -33,9 +35,10 @@ const MapClickHandler = ({ onSelect }: { onSelect: (lat: number, lng: number) =>
     },
   });
   return null;
-};
+});
 
-const MapUpdater = ({ center }: { center: [number, number] | null }) => {
+// Memoized MapUpdater
+const MapUpdater = React.memo(({ center }: { center: [number, number] | null }) => {
   const map = useMap();
   React.useEffect(() => {
     if (center) {
@@ -53,9 +56,9 @@ const MapUpdater = ({ center }: { center: [number, number] | null }) => {
   }, [map]);
 
   return null;
-};
+});
 
-export const LeafletMap: React.FC<MapProps> = ({ mode, onLocationSelect, points = [] }) => {
+export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSelect, points = [], initialCenter }) => {
   const centerPos = { lat: 19.4326, lng: -99.1332 }; // CDMX
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -67,11 +70,10 @@ export const LeafletMap: React.FC<MapProps> = ({ mode, onLocationSelect, points 
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.length > 2 && mode === 'input') {
         try {
-          const query = encodeURIComponent(searchQuery);
-          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=mx&addressdetails=1&limit=5`;
-          const response = await fetch(url);
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          const response = await fetch(`${apiUrl}/api/geocode/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
           const data = await response.json();
-          setSuggestions(data);
+          setSuggestions(Array.isArray(data) ? data : []);
         } catch (error) {
           console.error("Autocomplete error", error);
         }
@@ -80,10 +82,11 @@ export const LeafletMap: React.FC<MapProps> = ({ mode, onLocationSelect, points 
       }
     }, 600);
 
+
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, mode]);
 
-  const handleSelectSuggestion = (place: any) => {
+  const handleSelectSuggestion = useCallback((place: any) => {
     const lat = parseFloat(place.lat);
     const lng = parseFloat(place.lon);
     setMapCenter([lat, lng]);
@@ -91,15 +94,14 @@ export const LeafletMap: React.FC<MapProps> = ({ mode, onLocationSelect, points 
     setSearchQuery(place.display_name);
     setSuggestions([]);
     if (onLocationSelect) onLocationSelect(lat, lng);
-  };
+  }, [onLocationSelect]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!searchQuery) return;
     setIsSearching(true);
     try {
-      const query = encodeURIComponent(searchQuery);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=mx&addressdetails=1&limit=1`;
-      const response = await fetch(url);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/geocode/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
       const data = await response.json();
 
       if (data && data.length > 0) {
@@ -112,12 +114,13 @@ export const LeafletMap: React.FC<MapProps> = ({ mode, onLocationSelect, points 
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [searchQuery, handleSelectSuggestion]);
 
-  const handleMapClick = (lat: number, lng: number) => {
+  const handleMapClick = useCallback((lat: number, lng: number) => {
     setSelectedPosition(L.latLng(lat, lng));
     if (onLocationSelect) onLocationSelect(lat, lng);
-  };
+  }, [onLocationSelect]);
+
 
   return (
     <div className="w-full relative z-0 flex flex-col bg-[#020617] h-[400px] md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden border border-white/10">
@@ -260,4 +263,4 @@ export const LeafletMap: React.FC<MapProps> = ({ mode, onLocationSelect, points 
       `}</style>
     </div>
   );
-};
+});

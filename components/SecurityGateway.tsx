@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface SecurityGatewayProps {
     onProceed: () => void;
@@ -6,6 +7,7 @@ interface SecurityGatewayProps {
 
 export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) => {
     const [showTorModal, setShowTorModal] = useState(false);
+    const navigate = useNavigate();
     const onionAddress = "https://denunzia.org"; // Dirección segura oficial
 
     // Panic button handler - redirect to Google
@@ -27,7 +29,6 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
 
     // Prevent browser from caching this page
     useEffect(() => {
-        // Add meta tags for no-cache
         const metaNoCache = document.createElement('meta');
         metaNoCache.httpEquiv = 'Cache-Control';
         metaNoCache.content = 'no-store, no-cache, must-revalidate, max-age=0';
@@ -50,117 +51,131 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
         };
     }, []);
 
-    return (
-        <div className="min-h-screen bg-slate-900 relative overflow-x-hidden selection:bg-[#d946ef]/30 font-sans">
-            {/* Background Gradient - Fixed */}
-            <div className="fixed inset-0 bg-gradient-to-br from-[#0f172a] to-[#1e293b] -z-10"></div>
+    const handleProceedToDashboard = () => {
+        onProceed();
+        navigate('/');
+    };
 
-            {/* Panic Button - Always Fixed */}
-            <button
-                onClick={handlePanic}
-                className="fixed top-4 right-4 z-[9999] bg-red-600 text-white border-none py-2 px-4 md:py-3 md:px-6 rounded-lg text-xs md:text-base font-black cursor-pointer shadow-lg shadow-red-600/40 hover:bg-red-700 transition-all active:scale-95 flex items-center gap-2"
-                aria-label="Botón de pánico - Salir inmediatamente"
-                title="Presiona ESC o haz clic para salir inmediatamente"
-            >
-                ⚠️ <span className="hidden sm:inline">SALIDA RÁPIDA</span><span className="sm:hidden">SALIR</span>
-            </button>
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] relative overflow-x-hidden selection:bg-[#7c3aed]/30 font-sans">
+            {/* Top Right Buttons */}
+            <div className="fixed top-4 right-4 z-[9999] flex gap-3">
+                {/* Ver Mapa de Reportes Button */}
+                <button
+                    onClick={handleProceedToDashboard}
+                    className="bg-white/90 text-[#6366f1] border-2 border-[#6366f1]/30 py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-bold cursor-pointer shadow-lg hover:bg-white transition-all active:scale-95 flex items-center gap-2"
+                    aria-label="Ver mapa de reportes"
+                >
+                    📊 <span className="hidden sm:inline">Ver Mapa de Reportes</span><span className="sm:hidden">Mapa</span>
+                </button>
+
+                {/* Panic/Exit Button */}
+                <button
+                    onClick={handlePanic}
+                    className="bg-[#7c3aed] text-white border-none py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-bold cursor-pointer shadow-lg shadow-[#7c3aed]/40 hover:bg-[#6d28d9] transition-all active:scale-95"
+                    aria-label="Botón de salida rápida"
+                    title="Presiona ESC o haz clic para salir inmediatamente"
+                >
+                    SALIR
+                </button>
+            </div>
 
             {/* Scrollable Content Wrapper */}
             <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 py-24 md:py-12">
                 {/* Main Content */}
-                <div className="w-full max-w-2xl text-center">
+                <div className="w-full max-w-md text-center">
                     {/* Logo/Icon */}
-                    <div className="mb-6 flex justify-center transform hover:scale-105 transition-transform duration-500">
-                        <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-[0_0_15px_rgba(217,70,239,0.5)]" />
+                    <div className="mb-8 flex justify-center transform hover:scale-105 transition-transform duration-500">
+                        <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_0_20px_rgba(124,58,237,0.4)]" />
                     </div>
 
-                    {/* Warning Message */}
-                    <h1 className="text-2xl md:text-4xl font-black text-slate-50 mb-6 md:mb-8 tracking-wide leading-tight px-4">
-                        ACCESO SEGURO A DENUNCIAS ANÓNIMAS
+                    {/* Welcome Message */}
+                    <h1 className="text-3xl md:text-4xl font-bold text-[#1e293b] mb-12 tracking-tight">
+                        Bienvenido
                     </h1>
-
-                    <div className="bg-[#d946ef]/10 border-2 border-[#d946ef]/30 rounded-2xl p-6 md:p-8 mb-8 md:mb-10 text-left mx-2 backdrop-blur-sm">
-                        <p className="text-base md:text-lg font-bold text-slate-200 mb-3 md:mb-4 leading-relaxed flex items-start gap-3">
-                            <span className="shrink-0">⚡</span>
-                            <span>Esta plataforma protege tu identidad mediante cifrado de extremo a extremo.</span>
-                        </p>
-                        <p className="text-base md:text-lg font-bold text-slate-200 mb-3 md:mb-4 leading-relaxed flex items-start gap-3">
-                            <span className="shrink-0">🔒</span>
-                            <span>Tu ubicación, dispositivo e identidad permanecerán completamente anónimos.</span>
-                        </p>
-                        <p className="text-base md:text-lg font-bold text-slate-200 leading-relaxed flex items-start gap-3">
-                            <span className="shrink-0">🛡️</span>
-                            <span>No almacenamos registros de acceso ni información personal.</span>
-                        </p>
-                    </div>
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-4 mb-8 mx-2">
+                        {/* Main Report Button */}
                         <button
-                            onClick={onProceed}
-                            className="group relative overflow-hidden bg-gradient-to-br from-[#d946ef] to-[#8b5cf6] border-none rounded-2xl p-5 md:p-6 cursor-pointer flex items-center gap-4 md:gap-6 shadow-xl shadow-[#d946ef]/20 transition-all hover:-translate-y-1 active:scale-95 text-left"
+                            onClick={() => {
+                                onProceed();
+                                navigate('/denunciar');
+                            }}
+                            className="group relative overflow-hidden bg-[#7c3aed] hover:bg-[#6d28d9] border-none rounded-full py-4 px-6 cursor-pointer shadow-xl shadow-[#7c3aed]/30 transition-all hover:shadow-[#7c3aed]/50 active:scale-98"
                         >
-                            <span className="text-2xl md:text-4xl group-hover:scale-110 transition-transform">✓</span>
-                            <div className="flex-1">
-                                <div className="text-lg md:text-xl font-black text-slate-50 mb-1">Proceder con Seguridad Estándar</div>
-                                <div className="text-sm md:text-base font-semibold text-slate-300">Conexión cifrada HTTPS + datos de forma anónima</div>
+                            <div className="text-center">
+                                <div className="text-lg md:text-xl font-bold text-white mb-2">
+                                    HAZ TU DENUNCIA
+                                </div>
+                                <div className="text-xs md:text-sm font-medium text-white/80 leading-relaxed px-2">
+                                    Tu denuncia es anónima, no guardamos datos de ubicación, ni datos personales.
+                                </div>
                             </div>
                         </button>
 
+                        {/* TOR Browser Button */}
                         <button
                             onClick={() => setShowTorModal(true)}
-                            className="group bg-blue-500/10 border-2 border-blue-500/50 rounded-2xl p-5 md:p-6 cursor-pointer flex items-center gap-4 md:gap-6 transition-all hover:-translate-y-1 hover:bg-blue-500/20 active:scale-95 text-left"
+                            className="group bg-white/80 hover:bg-white border-2 border-[#6366f1]/30 rounded-full py-4 px-6 cursor-pointer transition-all hover:border-[#6366f1]/50 active:scale-98 shadow-lg"
                         >
-                            <span className="text-2xl md:text-4xl group-hover:scale-110 transition-transform">🔐</span>
-                            <div className="flex-1">
-                                <div className="text-lg md:text-xl font-black text-slate-50 mb-1">Necesito Anonimato Extremo</div>
-                                <div className="text-sm md:text-base font-semibold text-slate-300">Acceso vía red TOR para máxima privacidad</div>
+                            <div className="text-center">
+                                <div className="text-lg md:text-xl font-bold text-[#1e293b] mb-2">
+                                    Buscador TOR
+                                </div>
+                                <div className="text-xs md:text-sm font-medium text-[#64748b] leading-relaxed px-2">
+                                    Enlace a Buscador TOR para mayor seguridad al hacer la denuncia.
+                                </div>
                             </div>
                         </button>
                     </div>
-
-                    {/* Footer Info */}
-                    <p className="text-slate-400 font-semibold text-sm md:text-base px-6">
-                        💡 Presiona <strong className="text-slate-200">ESC</strong> en cualquier momento para salir inmediatamente
-                    </p>
                 </div>
             </div>
+
+            {/* Admin Button - Bottom Right (Discrete) */}
+            <button
+                onClick={() => navigate('/admin')}
+                className="fixed bottom-4 right-4 text-[#94a3b8] hover:text-[#7c3aed] text-xs font-medium transition-colors"
+                aria-label="Acceso administrativo"
+            >
+                Admin.
+            </button>
 
             {/* TOR Modal */}
             {showTorModal && (
                 <div className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setShowTorModal(false)}>
-                    <div className="bg-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-10 relative shadow-2xl border-2 border-blue-500/30" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 md:p-10 relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={() => setShowTorModal(false)}
-                            className="absolute top-4 right-4 bg-white/10 text-slate-200 w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors text-xl font-bold"
+                            className="absolute top-4 right-4 bg-slate-100 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors text-xl font-bold"
                             aria-label="Cerrar"
                         >
                             ✕
                         </button>
 
-                        <h2 className="text-2xl md:text-3xl font-black text-slate-50 mb-6 flex items-center gap-3">
+                        <h2 className="text-2xl md:text-3xl font-bold text-[#1e293b] mb-6 flex items-center gap-3">
                             🔐 Acceso con Anonimato Extremo
                         </h2>
 
-                        <div className="text-slate-200 space-y-6">
-                            <p className="text-lg font-semibold leading-relaxed">
+                        <div className="text-[#475569] space-y-6">
+                            <p className="text-lg font-medium leading-relaxed">
                                 Para garantizar el máximo nivel de anonimato, te recomendamos acceder a esta plataforma
-                                a través de la red <strong className="text-blue-400">TOR</strong>.
+                                a través de la red <strong className="text-[#7c3aed]">TOR</strong>.
                             </p>
 
                             <div className="space-y-6">
                                 <div className="flex gap-4 items-start">
-                                    <span className="bg-blue-500 text-white w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-lg shrink-0">1</span>
+                                    <span className="bg-[#7c3aed] text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shrink-0">1</span>
                                     <div>
-                                        <h3 className="text-lg md:text-xl font-black text-slate-50 mb-2">Descarga TOR Browser</h3>
-                                        <p className="text-slate-300 font-medium mb-3">
+                                        <h3 className="text-lg md:text-xl font-bold text-[#1e293b] mb-2">Descarga TOR Browser</h3>
+                                        <p className="text-[#64748b] font-medium mb-3">
                                             Visita el sitio oficial de TOR para descargar el navegador seguro:
                                         </p>
                                         <a
                                             href="https://www.torproject.org/"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-block bg-violet-500/20 text-violet-300 px-4 py-2 md:px-6 md:py-3 rounded-xl border-2 border-violet-500/40 font-bold hover:bg-violet-500/30 transition-colors"
+                                            className="inline-block bg-[#7c3aed]/10 text-[#7c3aed] px-6 py-3 rounded-xl border-2 border-[#7c3aed]/30 font-bold hover:bg-[#7c3aed]/20 transition-colors"
                                         >
                                             🌐 torproject.org
                                         </a>
@@ -168,20 +183,20 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                                 </div>
 
                                 <div className="flex gap-4 items-start">
-                                    <span className="bg-blue-500 text-white w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-lg shrink-0">2</span>
+                                    <span className="bg-[#7c3aed] text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shrink-0">2</span>
                                     <div className="w-full">
-                                        <h3 className="text-lg md:text-xl font-black text-slate-50 mb-2">Accede a nuestra plataforma segura</h3>
-                                        <p className="text-slate-300 font-medium mb-3">
+                                        <h3 className="text-lg md:text-xl font-bold text-[#1e293b] mb-2">Accede a nuestra plataforma segura</h3>
+                                        <p className="text-[#64748b] font-medium mb-3">
                                             Una vez instalado TOR Browser, copia y pega esta dirección:
                                         </p>
-                                        <div className="bg-black/40 p-3 md:p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row items-center gap-3 w-full">
-                                            <code className="text-emerald-400 font-mono font-bold text-sm break-all">{onionAddress}</code>
+                                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center gap-3 w-full">
+                                            <code className="text-[#7c3aed] font-mono font-bold text-sm break-all">{onionAddress}</code>
                                             <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(onionAddress);
                                                     alert('✓ Dirección copiada al portapapeles');
                                                 }}
-                                                className="bg-emerald-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-sm whitespace-nowrap hover:bg-emerald-600 transition-colors w-full sm:w-auto"
+                                                className="bg-[#7c3aed] text-white px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap hover:bg-[#6d28d9] transition-colors w-full sm:w-auto"
                                             >
                                                 📋 Copiar
                                             </button>
@@ -190,17 +205,17 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                                 </div>
 
                                 <div className="flex gap-4 items-start">
-                                    <span className="bg-blue-500 text-white w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-lg shrink-0">3</span>
+                                    <span className="bg-[#7c3aed] text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg shrink-0">3</span>
                                     <div>
-                                        <h3 className="text-lg md:text-xl font-black text-slate-50 mb-2">Navega de forma completamente anónima</h3>
-                                        <p className="text-slate-300 font-medium">
+                                        <h3 className="text-lg md:text-xl font-bold text-[#1e293b] mb-2">Navega de forma completamente anónima</h3>
+                                        <p className="text-[#64748b] font-medium">
                                             TOR oculta tu dirección IP y ubicación, garantizando que nadie pueda rastrearte.
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-xl p-4 md:p-5 text-amber-400 font-bold text-sm md:text-base leading-relaxed">
+                            <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 text-amber-800 font-medium text-sm md:text-base leading-relaxed">
                                 ⚠️ <strong>Importante:</strong> Nunca descargues TOR desde sitios no oficiales.
                                 Solo usa <strong>torproject.org</strong>
                             </div>
