@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
@@ -8,6 +8,20 @@ import { AdminPanel } from './components/AdminPanel';
 import { About } from './components/About';
 import { SecurityGateway } from './components/SecurityGateway';
 import { SplashScreen } from './components/SplashScreen';
+
+// Page Transition Wrapper Component
+function PageTransition({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+
+  return (
+    <div
+      key={location.pathname}
+      className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+    >
+      {children}
+    </div>
+  );
+}
 
 function App() {
   // Splash screen state
@@ -68,7 +82,9 @@ function App() {
                   <meta name="description" content="Sistema Integrado de Inteligencia Ética y Criminal. Plataforma segura para denuncias anónimas, protección de alertadores y análisis de inteligencia." />
                   <link rel="canonical" href="https://denunzia.ai/" />
                 </Helmet>
-                <Dashboard />
+                <PageTransition>
+                  <Dashboard />
+                </PageTransition>
               </>
             } />
             <Route path="denunciar" element={
@@ -78,7 +94,9 @@ function App() {
                   <meta name="description" content="Formulario de alta seguridad para reportes ciudadanos. Cifrado RSA-4096 de extremo a extremo, protección total de identidad y red TOR." />
                   <link rel="canonical" href="https://denunzia.ai/denunciar" />
                 </Helmet>
-                <ReportForm />
+                <PageTransition>
+                  <ReportForm />
+                </PageTransition>
               </>
             } />
             <Route path="informacion" element={
@@ -88,7 +106,9 @@ function App() {
                   <meta name="description" content="Conozca cómo nuestra tecnología de cifrado E2EE y red TOR protege a los alertadores." />
                   <link rel="canonical" href="https://denunzia.ai/informacion" />
                 </Helmet>
-                <About />
+                <PageTransition>
+                  <About />
+                </PageTransition>
               </>
             } />
             <Route path="admin" element={
@@ -97,7 +117,9 @@ function App() {
                   <title>Acceso Administrativo | DenunZIA</title>
                   <meta name="robots" content="noindex" />
                 </Helmet>
-                <AdminPanel />
+                <PageTransition>
+                  <AdminPanel />
+                </PageTransition>
               </>
             } />
             {/* Fallback para 404 */}
