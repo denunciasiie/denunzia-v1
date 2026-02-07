@@ -1,8 +1,9 @@
 export enum UserRole {
-  CITIZEN = "Ciudadano (Particular)",
-  GOVERNMENT = "Empleado Gubernamental",
-  MILITARY = "Fuerzas Armadas / Seguridad",
-  PRIVATE = "Empleado Empresa Privada"
+  CITIZEN = "Ciudadano",
+  GOVERNMENT = "Empleado de Gobierno",
+  COMPANY = "Empresa",
+  MILITARY = "Fuerzas Armadas",
+  OTHER = "Otro"
 }
 
 export enum CrimeCategory {
