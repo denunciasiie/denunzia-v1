@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Circle, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css'; // IMPORTANTE: Corrige el visualizado del mapa
 import { Search, Loader2, MapPin, Target, Crosshair } from 'lucide-react';
 
 // Fix for default marker icons in React Leaflet
