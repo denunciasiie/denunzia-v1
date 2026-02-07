@@ -136,13 +136,19 @@ export const ReportForm: React.FC = () => {
 
       if (data && data.address) {
         const addr = data.address;
+
+        // Better mapping to avoid duplicates
+        const colony = addr.suburb || addr.neighbourhood || addr.hamlet || addr.quarter || '';
+        const municipality = addr.city || addr.town || addr.municipality || addr.county || '';
+        const state = addr.state || addr.province || '';
+
         setFormData(prev => ({
           ...prev,
           addressDetails: {
-            street: addr.road || addr.street || '',
-            colony: addr.suburb || addr.neighbourhood || addr.hamlet || '',
-            municipality: addr.city || addr.town || addr.municipality || '',
-            state: addr.state || '',
+            street: addr.road || addr.street || addr.pedestrian || '',
+            colony: colony,
+            municipality: municipality,
+            state: state,
             zipCode: addr.postcode || '',
             references: data.display_name || ''
           }
