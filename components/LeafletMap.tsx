@@ -128,6 +128,9 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
       {mode === 'input' && (
         <div className="w-full bg-slate-50 border-b border-slate-200 p-3 z-[1000] flex flex-col">
           <div className="w-full relative">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-cyber uppercase tracking-widest text-[#d946ef] font-bold">Ubicación Táctica</span>
+            </div>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
