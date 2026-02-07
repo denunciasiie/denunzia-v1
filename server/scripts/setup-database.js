@@ -46,6 +46,19 @@ CREATE TABLE IF NOT EXISTS reports (
     CONSTRAINT valid_trust_score CHECK (trust_score >= 0 AND trust_score <= 1)
 );
 
+-- Migrate trust_score column if it exists as INTEGER (from old schema)
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'reports' 
+        AND column_name = 'trust_score' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE reports ALTER COLUMN trust_score TYPE DECIMAL(3, 2);
+    END IF;
+END $$;
+
 -- Enable RLS on reports
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 
