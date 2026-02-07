@@ -98,7 +98,10 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                     <div className="flex flex-col gap-4 mb-8 mx-2">
                         {/* Main Report Button */}
                         <button
-                            onClick={onProceed}
+                            onClick={() => {
+                                onProceed();
+                                navigate('/denunciar');
+                            }}
                             className="group relative overflow-hidden bg-[#7c3aed] hover:bg-[#6d28d9] border-none rounded-full py-4 px-6 cursor-pointer shadow-xl shadow-[#7c3aed]/30 transition-all hover:shadow-[#7c3aed]/50 active:scale-98"
                         >
                             <div className="text-center">
