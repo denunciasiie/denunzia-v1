@@ -124,7 +124,7 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
 
 
   return (
-    <div className="w-full relative z-0 flex flex-col bg-white h-[400px] md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
+    <div className="w-full relative z-0 flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
       {mode === 'input' && (
         <div className="w-full bg-slate-50 border-b border-slate-200 p-3 z-[1000] flex flex-col">
           <div className="w-full relative">
@@ -183,7 +183,7 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
         </div>
       )}
 
-      <div className="flex-1 w-full h-full relative">
+      <div className="w-full h-[400px] md:h-[500px] lg:h-[600px] relative">
 
         <MapContainer
           center={mapCenter || centerPos}
@@ -238,7 +238,7 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
       </div>
 
       {mode === 'input' && (
-        <div className="absolute bottom-4 left-4 right-4 z-[10000] bg-white/95 backdrop-blur-sm p-3 py-2 rounded-xl text-[9px] md:text-[10px] font-cyber text-slate-700 border border-slate-200 shadow-lg flex items-center gap-3 uppercase tracking-[0.15em] justify-center">
+        <div className="absolute bottom-4 left-4 right-4 z-[10000] bg-white/95 backdrop-blur-sm p-3 py-2 rounded-xl text-[9px] md:text-[10px] font-cyber text-slate-700 border border-slate-200 shadow-lg flex items-center gap-3 uppercase tracking-[0.15em] justify-center pointer-events-none">
           <div className="relative flex-shrink-0">
             <Crosshair size={12} className="text-[#d946ef] animate-pulse" />
           </div>
