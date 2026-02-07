@@ -52,7 +52,9 @@ ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 -- Allow public inserts (anyone can submit a report)
 -- Note: The backend connects as a superuser/admin so it bypasses RLS, 
 -- but this protects the table from direct public API access if exposed via PostgREST
+DROP POLICY IF EXISTS "Enable insert for everyone" ON reports;
 CREATE POLICY "Enable insert for everyone" ON reports FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Enable read for admins only" ON reports;
 CREATE POLICY "Enable read for admins only" ON reports FOR SELECT USING (false); -- Implicitly denies public read
 
 -- Admin Users Table
