@@ -131,7 +131,20 @@ export const ReportForm: React.FC = () => {
 
     // Reverse Geocoding
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'DenunZIA/1.0',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
       if (data && data.address) {
@@ -156,6 +169,7 @@ export const ReportForm: React.FC = () => {
       }
     } catch (error) {
       console.error('Geocoding error:', error);
+      // Don't show error to user, they can fill manually
     }
   };
 
