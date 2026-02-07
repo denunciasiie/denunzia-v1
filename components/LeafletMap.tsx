@@ -70,11 +70,10 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.length > 2 && mode === 'input') {
         try {
-          const query = encodeURIComponent(searchQuery);
-          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=mx&addressdetails=1&limit=5`;
-          const response = await fetch(url);
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          const response = await fetch(`${apiUrl}/api/geocode/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
           const data = await response.json();
-          setSuggestions(data);
+          setSuggestions(Array.isArray(data) ? data : []);
         } catch (error) {
           console.error("Autocomplete error", error);
         }
@@ -101,9 +100,8 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
     if (!searchQuery) return;
     setIsSearching(true);
     try {
-      const query = encodeURIComponent(searchQuery);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=mx&addressdetails=1&limit=1`;
-      const response = await fetch(url);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/geocode/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
       const data = await response.json();
 
       if (data && data.length > 0) {

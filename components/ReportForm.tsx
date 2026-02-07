@@ -143,16 +143,20 @@ export const ReportForm: React.FC = () => {
       if (data && data.address) {
         const addr = data.address;
 
-        // Better mapping to avoid duplicates
-        const colony = addr.suburb || addr.neighbourhood || addr.hamlet || addr.quarter || '';
-        const municipality = addr.city || addr.town || addr.municipality || addr.county || '';
+        // Optimized mapping for Mexico
+        const colonyBase = addr.suburb || addr.neighbourhood || addr.hamlet || addr.quarter || addr.village || '';
+        const cp = addr.postcode ? ` C.P. ${addr.postcode}` : '';
+
+        // Final values
+        const colony = colonyBase ? `Colonia ${colonyBase}${cp}` : (addr.postcode ? `Área C.P. ${addr.postcode}` : '');
+        const municipality = addr.city || addr.town || addr.municipality || addr.borough || addr.county || '';
         const state = addr.state || addr.province || '';
 
         setFormData(prev => ({
           ...prev,
           addressDetails: {
             street: addr.road || addr.street || addr.pedestrian || '',
-            colony: colony,
+            colony: colony.trim(),
             municipality: municipality,
             state: state,
             zipCode: addr.postcode || '',
