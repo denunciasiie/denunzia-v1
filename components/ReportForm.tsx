@@ -493,6 +493,122 @@ export const ReportForm: React.FC = () => {
             />
           </div>
 
+          {/* File Upload Section */}
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <h2 className="text-lg font-bold text-[#7c3aed] mb-4">
+              📎 Evidencia (Opcional)
+            </h2>
+            <p className="text-sm text-[#64748b] mb-4">
+              Adjunta fotos, videos o documentos que respalden tu denuncia
+            </p>
+
+            {/* Drag & Drop Zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.currentTarget.classList.add('border-[#7c3aed]', 'bg-[#7c3aed]/5');
+              }}
+              onDragLeave={(e) => {
+                e.currentTarget.classList.remove('border-[#7c3aed]', 'bg-[#7c3aed]/5');
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.currentTarget.classList.remove('border-[#7c3aed]', 'bg-[#7c3aed]/5');
+                const droppedFiles = Array.from(e.dataTransfer.files);
+                setFormData({ ...formData, files: [...formData.files, ...droppedFiles] });
+              }}
+              className="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center transition-all cursor-pointer hover:border-[#7c3aed]/50 hover:bg-slate-50"
+            >
+              <input
+                type="file"
+                multiple
+                accept="image/*,video/*,.pdf"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    const newFiles = Array.from(e.target.files);
+                    setFormData({ ...formData, files: [...formData.files, ...newFiles] });
+                  }
+                }}
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="p-4 bg-[#7c3aed]/10 rounded-full">
+                    <svg className="w-8 h-8 text-[#7c3aed]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#1e293b] mb-1">
+                      Arrastra archivos aquí o haz clic para seleccionar
+                    </p>
+                    <p className="text-xs text-[#64748b]">
+                      Imágenes, videos o PDFs (máx. 10MB por archivo)
+                    </p>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* File Previews */}
+            {formData.files.length > 0 && (
+              <div className="mt-6 space-y-3">
+                <p className="text-sm font-bold text-[#1e293b]">
+                  Archivos adjuntos ({formData.files.length})
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {formData.files.map((file, index) => (
+                    <div key={index} className="relative group">
+                      {/* Image Preview */}
+                      {file.type.startsWith('image/') ? (
+                        <div className="aspect-square rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-200">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        /* Non-image file */
+                        <div className="aspect-square rounded-xl bg-slate-100 border-2 border-slate-200 flex flex-col items-center justify-center p-4">
+                          <svg className="w-12 h-12 text-[#7c3aed] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-xs text-center text-[#64748b] font-medium truncate w-full">
+                            {file.type.includes('video') ? '🎥 Video' : file.type.includes('pdf') ? '📄 PDF' : '📎 Archivo'}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* File Info Overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 rounded-b-xl">
+                        <p className="text-xs text-white truncate font-medium">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-white/70">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => {
+                          const newFiles = formData.files.filter((_, i) => i !== index);
+                          setFormData({ ...formData, files: newFiles });
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        title="Eliminar archivo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* CAPTCHA */}
           <div className="bg-white rounded-3xl p-6 shadow-lg">
             <h2 className="text-lg font-bold text-[#7c3aed] mb-4">
