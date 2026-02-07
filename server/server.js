@@ -17,6 +17,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy - Required for Render and other cloud platforms
+app.set('trust proxy', 1);
+
 // ==================== MIDDLEWARE ====================
 
 // Security headers
@@ -256,7 +259,7 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             location?.lat, location?.lng,
             location?.details?.street, location?.details?.colony, location?.details?.zipCode, location?.details?.references,
             timestamp || new Date().toISOString(),
-            trustScore, aiAnalysis, 'pending'
+            trustScore ? parseFloat(trustScore) : null, aiAnalysis, 'pending'
         ]);
 
         // 2. Process Files -> Pinata -> Evidence Table
