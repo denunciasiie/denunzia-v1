@@ -194,6 +194,51 @@ const encryptCID = (cid) => {
 };
 
 /**
+ * GET /api/geocode/reverse - Reverse geocoding proxy to avoid CORS
+ */
+app.get('/api/geocode/reverse', async (req, res) => {
+    try {
+        const { lat, lon } = req.query;
+
+        if (!lat || !lon) {
+            return res.status(400).json({ error: 'Missing lat or lon parameters' });
+        }
+
+        // Validate coordinates
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lon);
+
+        if (isNaN(latitude) || isNaN(longitude)) {
+            return res.status(400).json({ error: 'Invalid coordinates' });
+        }
+
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            return res.status(400).json({ error: 'Coordinates out of range' });
+        }
+
+        // Fetch from Nominatim
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
+        const response = await fetch(nominatimUrl, {
+            headers: {
+                'User-Agent': 'DenunZIA/1.0 (https://denunzia.org)',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Nominatim API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        res.json(data);
+
+    } catch (error) {
+        console.error('Geocoding error:', error);
+        res.status(500).json({ error: 'Geocoding service unavailable' });
+    }
+});
+
+/**
  * POST /api/reports - Submit a new encrypted report with files
  */
 app.post('/api/reports', upload.array('files'), async (req, res) => {

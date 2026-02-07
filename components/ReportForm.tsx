@@ -129,17 +129,10 @@ export const ReportForm: React.FC = () => {
     setFormData(prev => ({ ...prev, lat, lng }));
     setErrorMsg(null);
 
-    // Reverse Geocoding
+    // Reverse Geocoding via backend proxy
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-        {
-          headers: {
-            'User-Agent': 'DenunZIA/1.0',
-            'Accept': 'application/json'
-          }
-        }
-      );
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/geocode/reverse?lat=${lat}&lon=${lng}`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
