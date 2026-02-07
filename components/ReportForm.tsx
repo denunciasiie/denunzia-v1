@@ -124,14 +124,27 @@ export const ReportForm: React.FC = () => {
     files: [] as File[]
   });
 
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+
+  // Smart API URL detection
+  const getApiUrl = () => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'denunzia.org' || window.location.hostname.includes('github.io')) {
+        return 'https://denunzia-v1.onrender.com';
+      }
+    }
+    return import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  };
+
   // Handle location selection from map
   const handleLocationSelect = async (lat: number, lng: number) => {
     setFormData(prev => ({ ...prev, lat, lng }));
     setErrorMsg(null);
+    setIsLoadingAddress(true);
 
     // Reverse Geocoding via backend proxy
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/geocode/reverse?lat=${lat}&lon=${lng}`);
 
       if (!response.ok) {
@@ -166,7 +179,9 @@ export const ReportForm: React.FC = () => {
       }
     } catch (error) {
       console.error('Geocoding error:', error);
-      // Don't show error to user, they can fill manually
+      // Fallback: user fills manually
+    } finally {
+      setIsLoadingAddress(false);
     }
   };
 
@@ -434,12 +449,13 @@ export const ReportForm: React.FC = () => {
             <input
               type="text"
               placeholder="Calle y número"
-              value={formData.addressDetails.street}
+              value={isLoadingAddress ? 'Obteniendo dirección...' : formData.addressDetails.street}
+              disabled={isLoadingAddress}
               onChange={e => setFormData({
                 ...formData,
                 addressDetails: { ...formData.addressDetails, street: e.target.value }
               })}
-              className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed] mb-3"
+              className={`w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed] mb-1 ${isLoadingAddress ? 'opacity-70 animate-pulse' : ''}`}
             />
           </div>
 
@@ -452,32 +468,35 @@ export const ReportForm: React.FC = () => {
               <input
                 type="text"
                 placeholder="Colonia"
-                value={formData.addressDetails.colony}
+                value={isLoadingAddress ? '...' : formData.addressDetails.colony}
                 onChange={e => setFormData({
                   ...formData,
                   addressDetails: { ...formData.addressDetails, colony: e.target.value }
                 })}
-                className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed]"
+                disabled={isLoadingAddress}
+                className={`w-full p-4 border-2 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed] ${isLoadingAddress ? 'border-[#7c3aed]/50 animate-pulse' : 'border-slate-200'}`}
               />
               <input
                 type="text"
                 placeholder="Municipio"
-                value={formData.addressDetails.municipality}
+                value={isLoadingAddress ? '...' : formData.addressDetails.municipality}
                 onChange={e => setFormData({
                   ...formData,
                   addressDetails: { ...formData.addressDetails, municipality: e.target.value }
                 })}
-                className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed]"
+                disabled={isLoadingAddress}
+                className={`w-full p-4 border-2 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed] ${isLoadingAddress ? 'border-[#7c3aed]/50 animate-pulse' : 'border-slate-200'}`}
               />
               <input
                 type="text"
                 placeholder="Estado"
-                value={formData.addressDetails.state}
+                value={isLoadingAddress ? '...' : formData.addressDetails.state}
                 onChange={e => setFormData({
                   ...formData,
                   addressDetails: { ...formData.addressDetails, state: e.target.value }
                 })}
-                className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed]"
+                disabled={isLoadingAddress}
+                className={`w-full p-4 border-2 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed] ${isLoadingAddress ? 'border-[#7c3aed]/50 animate-pulse' : 'border-slate-200'}`}
               />
             </div>
           </div>
