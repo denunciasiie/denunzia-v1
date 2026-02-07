@@ -19,7 +19,7 @@ const TacticalMarkerIcon = L.divIcon({
 L.Marker.prototype.options.icon = TacticalMarkerIcon;
 
 interface MapProps {
-  mode: 'input' | 'view' | 'select';
+  mode: 'input' | 'view';
   onLocationSelect?: (lat: number, lng: number) => void;
   points?: { lat: number; lng: number; intensity: number; category: string }[];
   initialCenter?: { lat: number; lng: number };

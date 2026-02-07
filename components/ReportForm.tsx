@@ -324,7 +324,7 @@ export const ReportForm: React.FC = () => {
           {/* Map Section */}
           <div className="flex-1 relative">
             <LeafletMap
-              mode="select"
+              mode="input"
               onLocationSelect={handleLocationSelect}
               initialCenter={formData.lat && formData.lng ? { lat: formData.lat, lng: formData.lng } : undefined}
             />
