@@ -4,7 +4,6 @@ import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, RefreshCw } from 'lucide
 import { LeafletMap } from './LeafletMap';
 import { analyzeReport } from '../services/geminiService';
 import { encryptData, sanitizeInput } from '../services/encryptionService';
-import { uploadToPinata } from '../services/pinataService';
 
 // Simple Canvas CAPTCHA Component
 const Captcha: React.FC<{ onVerify: (isValid: boolean) => void }> = ({ onVerify }) => {
@@ -87,8 +86,8 @@ const Captcha: React.FC<{ onVerify: (isValid: boolean) => void }> = ({ onVerify 
         type="text"
         placeholder="INGRESE CÓDIGO"
         className={`w-full border-2 rounded-xl p-4 text-center font-bold tracking-widest outline-none transition-all ${isVerified
-            ? 'border-green-500 text-green-600 bg-green-50'
-            : 'border-slate-200 focus:border-[#7c3aed] text-[#1e293b] bg-white'
+          ? 'border-green-500 text-green-600 bg-green-50'
+          : 'border-slate-200 focus:border-[#7c3aed] text-[#1e293b] bg-white'
           }`}
         value={userInput}
         onChange={handleInput}
@@ -210,13 +209,17 @@ export const ReportForm: React.FC = () => {
       // Encrypt sensitive data
       const { encryptedData, encryptedKey, iv } = await encryptData(JSON.stringify(reportData));
 
-      // Upload files to Pinata if any
-      const filePromises = formData.files.map(file => uploadToPinata(file, id));
-      await Promise.all(filePromises);
-
       // AI Analysis
-      const aiAnalysis = await analyzeReport(formData.narrative);
-      const trustScore = 0.85; // Placeholder
+      let aiAnalysis = '';
+      let trustScore = 0.85;
+      try {
+        const analysis = await analyzeReport(formData.narrative, CrimeType.OTHER);
+        aiAnalysis = analysis?.summary || 'Análisis no disponible';
+        trustScore = analysis?.trustScore || 0.85;
+      } catch (error) {
+        console.error('AI Analysis error:', error);
+        aiAnalysis = 'Análisis no disponible';
+      }
 
       // Send to backend
       const payload = new FormData();
@@ -238,7 +241,7 @@ export const ReportForm: React.FC = () => {
       payload.append('location', JSON.stringify(location));
       payload.append('timestamp', new Date().toISOString());
       payload.append('trustScore', trustScore.toString());
-      payload.append('aiAnalysis', aiAnalysis);
+      payload.append('aiAnalysis', aiAnalysis || 'Sin análisis');
 
       formData.files.forEach(file => {
         payload.append('files', file);
@@ -355,8 +358,8 @@ export const ReportForm: React.FC = () => {
                   key={option.value}
                   onClick={() => setFormData({ ...formData, role: option.value, customRole: '' })}
                   className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${formData.role === option.value
-                      ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed] font-bold'
-                      : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#7c3aed]/30'
+                    ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed] font-bold'
+                    : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#7c3aed]/30'
                     }`}
                 >
                   {option.label}
@@ -368,8 +371,8 @@ export const ReportForm: React.FC = () => {
                 <button
                   onClick={() => setFormData({ ...formData, role: UserRole.OTHER })}
                   className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${formData.role === UserRole.OTHER
-                      ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed] font-bold'
-                      : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#7c3aed]/30'
+                    ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed] font-bold'
+                    : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#7c3aed]/30'
                     }`}
                 >
                   Otro (especifica)
