@@ -59,17 +59,19 @@ BEGIN
     END IF;
 END $$;
 
--- Migrate ai_analysis column if it exists as JSON (should be TEXT)
+-- Migrate ai_analysis column if it exists as JSON/JSONB (should be TEXT)
 DO $$ 
 BEGIN
-    IF EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'reports' 
-        AND column_name = 'ai_analysis' 
-        AND data_type = 'json'
-    ) THEN
-        ALTER TABLE reports ALTER COLUMN ai_analysis TYPE TEXT;
-    END IF;
+    BEGIN
+        ALTER TABLE reports ALTER COLUMN ai_analysis TYPE TEXT USING ai_analysis::text;
+    EXCEPTION
+        WHEN undefined_column THEN
+            -- Column doesn't exist, ignore
+            NULL;
+        WHEN datatype_mismatch THEN
+            -- Already TEXT or compatible type, ignore
+            NULL;
+    END;
 END $$;
 
 -- Enable RLS on reports
