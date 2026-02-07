@@ -101,27 +101,24 @@ export const AdminPanel: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center bg-[#020617] p-6 relative overflow-hidden">
-        {/* Background Decoration */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d946ef]/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-        <div className="glass-effect p-12 rounded-[2.5rem] border border-white/10 max-w-md w-full shadow-2xl relative z-10">
-          <div className="bg-[#ff4d4d]/10 p-6 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 text-[#ff4d4d] border border-[#ff4d4d]/20 shadow-[0_0_30px_rgba(255,77,77,0.2)]">
-            <ShieldAlert size={48} />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] p-6">
+        <div className="bg-white p-12 rounded-3xl max-w-md w-full shadow-2xl">
+          <div className="bg-[#7c3aed]/10 p-6 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8">
+            <ShieldAlert size={48} className="text-[#7c3aed]" />
           </div>
 
-          <h2 className="text-2xl font-cyber font-bold mb-3 text-white tracking-[0.2em] uppercase">Security Terminal</h2>
-          <p className="text-[10px] text-[#8b949e] mb-10 font-cyber uppercase tracking-[0.3em] opacity-60">Authorized Intelligence Personnel Only</p>
+          <h2 className="text-2xl font-bold mb-3 text-[#1e293b]">Panel Administrativo</h2>
+          <p className="text-sm text-[#64748b] mb-10">Solo personal autorizado</p>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#d946ef] opacity-50">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7c3aed]">
                 <Lock size={16} />
               </div>
               <input
                 type="password"
-                placeholder="ENTER ACCESS KEY"
-                className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 pl-12 text-center outline-none focus:border-[#d946ef] text-white font-cyber tracking-[0.5em] transition-all text-xs"
+                placeholder="Contraseña de acceso"
+                className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 pl-12 text-center outline-none focus:border-[#7c3aed] text-[#1e293b] transition-all"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 disabled={booting}
@@ -130,20 +127,20 @@ export const AdminPanel: React.FC = () => {
 
             <button
               disabled={booting}
-              className="w-full bg-[#d946ef]/10 hover:bg-[#d946ef] text-[#d946ef] hover:text-[#020617] py-4 rounded-2xl font-cyber font-bold transition-all duration-500 shadow-[0_0_20px_rgba(217,70,239,0.1)] hover:shadow-[0_0_30px_rgba(217,70,239,0.4)] border border-[#d946ef]/30 text-[10px] tracking-[0.3em] uppercase flex items-center justify-center gap-3"
+              className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white py-4 rounded-full font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-3"
             >
               {booting ? (
                 <>
-                  <Cpu size={16} className="animate-spin" /> DECRYPTING...
+                  <Cpu size={16} className="animate-spin" /> Verificando...
                 </>
               ) : (
-                "AUTHENTICATE"
+                "Iniciar Sesión"
               )}
             </button>
           </form>
 
-          <div className="mt-12 pt-8 border-t border-white/5">
-            <p className="text-[8px] font-cyber text-[#8b949e] uppercase tracking-[0.5em]">System ID: SIIEC-X-99</p>
+          <div className="mt-8 pt-6 border-t border-slate-200">
+            <p className="text-xs text-[#94a3b8]">Sistema DenunZIA v2.0</p>
           </div>
         </div>
       </div>
