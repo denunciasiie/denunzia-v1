@@ -59,6 +59,19 @@ BEGIN
     END IF;
 END $$;
 
+-- Migrate ai_analysis column if it exists as JSON (should be TEXT)
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'reports' 
+        AND column_name = 'ai_analysis' 
+        AND data_type = 'json'
+    ) THEN
+        ALTER TABLE reports ALTER COLUMN ai_analysis TYPE TEXT;
+    END IF;
+END $$;
+
 -- Enable RLS on reports
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 
