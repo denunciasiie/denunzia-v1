@@ -364,7 +364,7 @@ export const ReportForm: React.FC = () => {
             </code>
           </div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => window.location.href = '/'}
             className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold hover:bg-[#6d28d9] transition-all"
           >
             Nueva Denuncia

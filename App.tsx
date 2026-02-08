@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { ReportForm } from './components/ReportForm';
@@ -60,7 +60,7 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       {/* Splash Screen - Shows first on initial load */}
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
@@ -102,7 +102,7 @@ function App() {
           } />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
