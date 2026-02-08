@@ -136,32 +136,55 @@ export const ReportForm: React.FC = () => {
     return import.meta.env.VITE_API_URL || 'http://localhost:3001';
   };
 
-  // Handle location selection from map
+  // Handle location selection from map with Robust Fallback
   const handleLocationSelect = async (lat: number, lng: number) => {
     setFormData(prev => ({ ...prev, lat, lng }));
     setErrorMsg(null);
     setIsLoadingAddress(true);
 
-    // Reverse Geocoding via backend proxy
     try {
-      const apiUrl = getApiUrl();
-      const response = await fetch(`${apiUrl}/api/geocode/reverse?lat=${lat}&lon=${lng}`);
+      let data = null;
+      let success = false;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // 1. Intentar Proxy Backend (Prioridad)
+      try {
+        const apiUrl = getApiUrl();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+        const response = await fetch(`${apiUrl}/api/geocode/reverse?lat=${lat}&lon=${lng}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          data = await response.json();
+          // Validar que no sea error de Nominatim forwarding
+          if (data && !data.error) success = true;
+        }
+      } catch (proxyError) {
+        console.warn('Proxy geocode failed, attempting direct fallback...');
       }
 
-      const data = await response.json();
+      // 2. Intentar Nominatim Directo (Fallback de Respaldo)
+      if (!success) {
+        console.log('Using direct Nominatim fallback');
+        try {
+          const fallbackRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+          if (fallbackRes.ok) {
+            data = await fallbackRes.json();
+            if (data && !data.error) success = true;
+          }
+        } catch (directError) {
+          console.error('Direct fallback also failed:', directError);
+        }
+      }
 
-      if (data && data.address) {
+      if (success && data && data.address) {
         const addr = data.address;
-
-        // Optimized mapping for Mexico
         const colonyBase = addr.suburb || addr.neighbourhood || addr.hamlet || addr.quarter || addr.village || '';
         const cp = addr.postcode ? ` C.P. ${addr.postcode}` : '';
 
         // Final values
-        const colony = colonyBase ? `Colonia ${colonyBase}${cp}` : (addr.postcode ? `Área C.P. ${addr.postcode}` : '');
         const municipality = addr.city || addr.town || addr.municipality || addr.borough || addr.county || '';
         const state = addr.state || addr.province || '';
 
@@ -169,17 +192,25 @@ export const ReportForm: React.FC = () => {
           ...prev,
           addressDetails: {
             street: addr.road || addr.street || addr.pedestrian || '',
-            colony: colony.trim(),
+            colony: colonyBase ? `Colonia ${colonyBase}${cp}` : (addr.postcode ? `Área C.P. ${addr.postcode}` : ''),
             municipality: municipality,
             state: state,
             zipCode: addr.postcode || '',
             references: data.display_name || ''
           }
         }));
+      } else {
+        // Fallback visual si falla geocodificación
+        setFormData(prev => ({
+          ...prev,
+          addressDetails: {
+            ...prev.addressDetails,
+            references: `Ubicación manual (${lat.toFixed(5)}, ${lng.toFixed(5)})`
+          }
+        }));
       }
     } catch (error) {
-      console.error('Geocoding error:', error);
-      // Fallback: user fills manually
+      console.error('Final geocoding error:', error);
     } finally {
       setIsLoadingAddress(false);
     }
@@ -253,27 +284,40 @@ export const ReportForm: React.FC = () => {
         aiAnalysis = 'Análisis no disponible';
       }
 
-      // Send to backend
-      const payload = new FormData();
-      payload.append('id', id);
-      payload.append('isAnonymous', 'true');
-      payload.append('role', formData.role === UserRole.OTHER ? formData.customRole : formData.role);
-      payload.append('category', CrimeCategory.COMMON);
-      payload.append('type', CrimeType.OTHER);
-      payload.append('encryptedData', encryptedData);
-      payload.append('encryptedKey', encryptedKey);
-      payload.append('iv', iv);
-      payload.append('algorithm', 'RSA-OAEP-4096 + AES-256-GCM');
+      // Formatear fecha para CDMX (UTC-6)
+      const now = new Date();
+      const cdmxOffset = 6 * 60 * 60 * 1000; // 6 horas en milisegundos
+      const cdmxDate = new Date(now.getTime() - cdmxOffset);
+      const timestampCDMX = cdmxDate.toISOString();
 
-      const location = {
+      // Construir objeto location correctamente
+      const locationData = {
         lat: formData.lat,
         lng: formData.lng,
         details: formData.addressDetails
       };
-      payload.append('location', JSON.stringify(location));
-      payload.append('timestamp', new Date().toISOString());
-      payload.append('trustScore', trustScore.toString());
-      payload.append('aiAnalysis', aiAnalysis || 'Sin análisis');
+
+      // Preparar objeto completo de datos (Payload)
+      // Esto coincide con la lógica del servidor línea 273: JSON.parse(req.body.payload)
+      const fullPayload = {
+        id,
+        isAnonymous: true,
+        role: formData.role === UserRole.OTHER ? formData.customRole : formData.role,
+        category: CrimeCategory.COMMON,
+        type: CrimeType.OTHER,
+        encryptedData,
+        encryptedKey,
+        iv,
+        algorithm: 'RSA-OAEP-4096 + AES-256-GCM',
+        location: locationData,
+        timestamp: timestampCDMX,
+        trustScore: trustScore.toString(),
+        aiAnalysis: aiAnalysis || 'Sin análisis'
+      };
+
+      // Send to backend
+      const payload = new FormData();
+      payload.append('payload', JSON.stringify(fullPayload)); // Enviar todo como un solo JSON string
 
       formData.files.forEach(file => {
         payload.append('files', file);
@@ -352,22 +396,31 @@ export const ReportForm: React.FC = () => {
 
       {/* Step 1: Map + Role Selection */}
       {step === 1 && (
-        <div className="flex flex-col h-[calc(100vh-64px)]">
+        <div className="flex flex-col min-h-[calc(100vh-64px)] pb-10">
           {/* Map Section */}
-          <div className="flex-1 relative">
+          <div className="relative w-full p-8 md:p-12 flex flex-col gap-4">
             <LeafletMap
               mode="input"
               onLocationSelect={handleLocationSelect}
               initialCenter={formData.lat && formData.lng ? { lat: formData.lat, lng: formData.lng } : undefined}
             />
             {formData.lat && formData.lng && (
-              <div className="absolute top-4 left-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-lg">
-                <div className="flex items-start gap-2">
-                  <MapPin size={16} className="text-[#7c3aed] mt-0.5 shrink-0" />
-                  <p className="text-xs text-[#64748b] leading-relaxed">
-                    {formData.addressDetails.street || 'Ubicación seleccionada'}
-                    {formData.addressDetails.colony && `, ${formData.addressDetails.colony}`}
-                  </p>
+              <div className="bg-white p-4 rounded-xl shadow-md border border-slate-200">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-[#7c3aed]/10 rounded-full shrink-0">
+                    <MapPin size={20} className="text-[#7c3aed]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-[#7c3aed] uppercase tracking-wider mb-1">Ubicación Seleccionada</h3>
+                    <p className="text-sm text-[#1e293b] font-medium leading-relaxed">
+                      {formData.addressDetails.street || 'Coordenadas fijadas'}
+                      {formData.addressDetails.colony && `, ${formData.addressDetails.colony}`}
+                      {formData.addressDetails.municipality && `, ${formData.addressDetails.municipality}`}
+                    </p>
+                    <p className="text-xs text-[#64748b] mt-1">
+                      Lat: {formData.lat.toFixed(6)}, Lng: {formData.lng.toFixed(6)}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -508,7 +561,7 @@ export const ReportForm: React.FC = () => {
             </h2>
             <input
               type="text"
-              placeholder="Escribe el nombre o descripción"
+              placeholder="Escribe quien es el presunto responsable"
               value={formData.accusedName}
               onChange={e => setFormData({ ...formData, accusedName: e.target.value })}
               className="w-full p-4 border-2 border-slate-200 rounded-2xl bg-slate-50 text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed]"
@@ -521,7 +574,7 @@ export const ReportForm: React.FC = () => {
               ¿Qué te pasó?
             </h2>
             <textarea
-              placeholder="Describe brevemente lo sucedido"
+              placeholder="Describe lo sucedido de forma breve y clara"
               value={formData.narrative}
               onChange={e => setFormData({ ...formData, narrative: e.target.value })}
               rows={6}
