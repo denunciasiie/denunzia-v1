@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Circle, useMap, Z
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // IMPORTANTE: Corrige el visualizado del mapa
 import { Search, Loader2, MapPin, Target, Crosshair } from 'lucide-react';
+import { HeatmapLayer } from './HeatmapLayer';
 
 // Fix for default marker icons in React Leaflet
 const TacticalMarkerIcon = L.divIcon({
@@ -23,7 +24,10 @@ interface MapProps {
   mode: 'input' | 'view';
   onLocationSelect?: (lat: number, lng: number) => void;
   points?: { lat: number; lng: number; intensity: number; category: string }[];
+  heatmapData?: { [category: string]: Array<[number, number, number]> };
   initialCenter?: { lat: number; lng: number };
+  heatmapRadius?: number;
+  heatmapBlur?: number;
 }
 
 // Memoized MapClickHandler
@@ -59,7 +63,7 @@ const MapUpdater = React.memo(({ center }: { center: [number, number] | null }) 
   return null;
 });
 
-export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSelect, points = [], initialCenter }) => {
+export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSelect, points = [], heatmapData, initialCenter, heatmapRadius, heatmapBlur }) => {
   const centerPos = { lat: 19.4326, lng: -99.1332 }; // CDMX
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -214,21 +218,41 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
             </Marker>
           )}
 
+          {mode === 'view' && heatmapData && Object.entries(heatmapData).map(([category, pts], idx) => {
+            const gradients: { [key: string]: any } = {
+              'Delito Común': { 0.1: '#6366f1', 0.4: '#4f46e5', 0.7: '#4338ca', 1: '#3730a3' },
+              'Alto Impacto': { 0.1: '#f472b6', 0.4: '#ec4899', 0.7: '#db2777', 1: '#be185d' },
+              'Corrupción / Cuello Blanco': { 0.1: '#fbbf24', 0.4: '#f59e0b', 0.7: '#d97706', 1: '#b45309' },
+              'default': { 0.1: 'blue', 0.5: 'green', 1: 'red' }
+            };
+            const gradient = gradients[category] || gradients['default'];
+
+            return (
+              <HeatmapLayer
+                key={category}
+                points={pts}
+                radius={heatmapRadius}
+                blur={heatmapBlur}
+                gradient={gradient}
+              />
+            );
+          })}
+
           {mode === 'view' && points.map((pt, idx) => (
             <Circle
               key={idx}
               center={[pt.lat, pt.lng]}
-              radius={2000}
+              radius={heatmapData ? 100 : 2000} // Smaller if heatmap is present
               pathOptions={{
-                color: pt.category.includes('Corrupción') ? '#ffcc00' : '#ff4d4d',
-                fillColor: pt.category.includes('Corrupción') ? '#ffcc00' : '#ff4d4d',
-                fillOpacity: 0.15,
-                weight: 2,
+                color: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
+                fillColor: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
+                fillOpacity: heatmapData ? 0.3 : 0.15,
+                weight: 1,
               }}
             >
               <Popup className="cyber-popup">
                 <div className="font-cyber text-[10px] uppercase tracking-widest text-[#e6edf3]">
-                  <strong className={pt.category.includes('Corrupción') ? 'text-[#ffcc00]' : 'text-[#ff4d4d]'}>{pt.category}</strong>
+                  <strong className={pt.category.includes('Corrupción') ? 'text-[#ffcc00]' : (pt.category.includes('Impacto') ? 'text-[#d946ef]' : 'text-[#6366f1]')}>{pt.category}</strong>
                   <div className="mt-2 opacity-60">Zona de Impacto Detectada</div>
                 </div>
               </Popup>
