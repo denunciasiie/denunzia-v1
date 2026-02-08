@@ -99,6 +99,7 @@ const Captcha: React.FC<{ onVerify: (isValid: boolean) => void }> = ({ onVerify 
 };
 
 export const ReportForm: React.FC = () => {
+  console.log('ReportForm v3.0 - Robust Fetch Check');
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
