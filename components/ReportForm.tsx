@@ -440,7 +440,8 @@ export const ReportForm: React.FC = () => {
                 { value: UserRole.CITIZEN, label: 'Ciudadano' },
                 { value: UserRole.GOVERNMENT, label: 'Empleado de Gobierno' },
                 { value: UserRole.COMPANY, label: 'Empresa' },
-                { value: UserRole.MILITARY, label: 'Fuerzas Armadas' }
+                { value: UserRole.MILITARY, label: 'Fuerzas Armadas' },
+                { value: UserRole.JOURNALISM, label: 'Medios informativos (Periodismo)' }
               ].map(option => (
                 <button
                   key={option.value}

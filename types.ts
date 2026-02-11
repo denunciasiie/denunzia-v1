@@ -3,6 +3,7 @@ export enum UserRole {
   GOVERNMENT = "Empleado de Gobierno",
   COMPANY = "Empresa",
   MILITARY = "Fuerzas Armadas",
+  JOURNALISM = "Medios informativos (Periodismo)",
   OTHER = "Otro"
 }
 
