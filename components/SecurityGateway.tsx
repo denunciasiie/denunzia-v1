@@ -7,6 +7,7 @@ interface SecurityGatewayProps {
 
 export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) => {
     const [showTorModal, setShowTorModal] = useState(false);
+    const [showChecklistModal, setShowChecklistModal] = useState(false);
     const navigate = useNavigate();
     const onionAddress = "https://denunzia.org"; // Dirección segura oficial
 
@@ -98,21 +99,31 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                     <div className="flex flex-col gap-4 mb-8 mx-2">
                         {/* Main Report Button */}
                         <button
-                            onClick={() => {
-                                onProceed();
-                                navigate('/denunciar');
-                            }}
+                            onClick={() => setShowChecklistModal(true)}
                             className="group relative overflow-hidden bg-[#7c3aed] hover:bg-[#6d28d9] border-none rounded-full py-4 px-6 cursor-pointer shadow-xl shadow-[#7c3aed]/30 transition-all hover:shadow-[#7c3aed]/50 active:scale-98"
                         >
                             <div className="text-center">
-                                <div className="text-lg md:text-xl font-bold text-white mb-2">
-                                    HAZ TU DENUNCIA
+                                <div className="text-lg md:text-xl font-bold text-white mb-2 uppercase tracking-wide">
+                                    Haz tu Denuncia
                                 </div>
                                 <div className="text-xs md:text-sm font-medium text-white/80 leading-relaxed px-2">
-                                    Tu denuncia es anónima, no guardamos datos de ubicación, ni datos personales.
+                                    Tu denuncia es anónima, no guardamos datos de ubicación ni personales.
                                 </div>
                             </div>
                         </button>
+
+                        {/* Emergency Warning */}
+                        <div className="bg-red-500/10 border-2 border-red-500/20 rounded-2xl p-4 md:p-5 flex items-center gap-4 animate-pulse">
+                            <span className="text-2xl md:text-3xl">⚠️</span>
+                            <div className="text-left">
+                                <p className="text-red-600 font-bold text-sm md:text-base leading-tight">
+                                    En caso de peligro inmediato, llama al 911
+                                </p>
+                                <p className="text-red-500/80 text-[10px] md:text-xs font-medium uppercase tracking-wider mt-1">
+                                    Esta plataforma NO recibe emergencias de respuesta inmediata
+                                </p>
+                            </div>
+                        </div>
 
                         {/* TOR Browser Button */}
                         <button
@@ -219,6 +230,53 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                                 ⚠️ <strong>Importante:</strong> Nunca descargues TOR desde sitios no oficiales.
                                 Solo usa <strong>torproject.org</strong>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Pre-Report Checklist Modal */}
+            {showChecklistModal && (
+                <div className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setShowChecklistModal(false)}>
+                    <div className="bg-white rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 md:p-10 relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setShowChecklistModal(false)}
+                            className="absolute top-4 right-4 bg-slate-100 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors text-xl font-bold"
+                            aria-label="Cerrar"
+                        >
+                            ✕
+                        </button>
+
+                        <h2 className="text-2xl md:text-3xl font-bold text-[#1e293b] mb-6 flex items-center gap-3">
+                            📋 Antes de Denunciar
+                        </h2>
+
+                        <div className="space-y-6">
+                            <div className="space-y-4">
+                                {[
+                                    { title: "Anonimato Total", text: "Toda la información es encriptada y tu dirección IP nunca se registra.", icon: "🔒" },
+                                    { title: "Detalle es Clave", text: "Describe el 'Qué', 'Quién', 'Cuándo' y 'Dónde' con la mayor precisión posible.", icon: "📝" },
+                                    { title: "Evidencia", text: "Si tienes fotos o documentos, prepáralos. Ayudan significativamente en la investigación.", icon: "📎" },
+                                    { title: "Seguridad Personal", text: "Asegúrate de estar en un lugar privado y seguro antes de proceder.", icon: "🛡️" }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex gap-4 items-start p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <span className="text-2xl mt-1">{item.icon}</span>
+                                        <div>
+                                            <h3 className="font-bold text-[#1e293b] mb-1">{item.title}</h3>
+                                            <p className="text-sm text-[#64748b] leading-relaxed">{item.text}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    onProceed();
+                                    navigate('/denunciar');
+                                }}
+                                className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold text-lg hover:bg-[#6d28d9] transition-all shadow-xl shadow-[#7c3aed]/20 active:scale-95"
+                            >
+                                ENTENDIDO, COMENZAR REPORTE
+                            </button>
                         </div>
                     </div>
                 </div>

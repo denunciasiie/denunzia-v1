@@ -74,16 +74,6 @@ BEGIN
     END;
 END $$;
 
--- Enable RLS on reports
-ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
-
--- Allow public inserts (anyone can submit a report)
--- Note: The backend connects as a superuser/admin so it bypasses RLS, 
--- but this protects the table from direct public API access if exposed via PostgREST
-DROP POLICY IF EXISTS "Enable insert for everyone" ON reports;
-CREATE POLICY "Enable insert for everyone" ON reports FOR INSERT WITH CHECK (true);
-DROP POLICY IF EXISTS "Enable read for admins only" ON reports;
-CREATE POLICY "Enable read for admins only" ON reports FOR SELECT USING (false); -- Implicitly denies public read
 
 -- Admin Users Table
 CREATE TABLE IF NOT EXISTS admin_users (
@@ -122,6 +112,30 @@ CREATE TABLE IF NOT EXISTS evidence_files (
     uploaded_at TIMESTAMP DEFAULT NOW()
 );
 
+-- --- SECURITY HARDENING (RLS) ---
+
+-- Enable RLS on all tables
+ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE evidence_files ENABLE ROW LEVEL SECURITY;
+
+-- Policies for 'reports'
+DROP POLICY IF EXISTS "Enable insert for everyone" ON reports;
+CREATE POLICY "Enable insert for everyone" ON reports FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Enable read for admins only" ON reports;
+CREATE POLICY "Enable read for admins only" ON reports FOR SELECT USING (false);
+
+-- Policies for other sensitive tables (Backend only access via superuser)
+DROP POLICY IF EXISTS "Restrict all public access admin_users" ON admin_users;
+CREATE POLICY "Restrict all public access admin_users" ON admin_users FOR ALL USING (false);
+
+DROP POLICY IF EXISTS "Restrict all public access audit_logs" ON audit_logs;
+CREATE POLICY "Restrict all public access audit_logs" ON audit_logs FOR ALL USING (false);
+
+DROP POLICY IF EXISTS "Restrict all public access evidence_files" ON evidence_files;
+CREATE POLICY "Restrict all public access evidence_files" ON evidence_files FOR ALL USING (false);
+
 -- Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_reports_timestamp ON reports(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_reports_category ON reports(category);
@@ -138,7 +152,8 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ language 'plpgsql'
+SET search_path = public;
 
 DROP TRIGGER IF EXISTS update_reports_updated_at ON reports;
 CREATE TRIGGER update_reports_updated_at BEFORE UPDATE ON reports
