@@ -28,32 +28,32 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"], // Disallow inline scripts for strict CSP
-            styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for UI components
-            imgSrc: ["'self'", "data:", "blob:"],
-            connectSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org"],
+            connectSrc: ["'self'", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
             fontSrc: ["'self'", "https:", "data:"],
-            objectSrc: ["'none'"], // No plugins
+            objectSrc: ["'none'"],
             mediaSrc: ["'none'"],
-            frameAncestors: ["'none'"], // Prevent Clickjacking
+            frameAncestors: ["'none'"],
             formAction: ["'self'"],
-            upgradeInsecureRequests: [], // Force HTTPS
+            upgradeInsecureRequests: [],
         },
     },
-    crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: { policy: "same-origin" },
-    crossOriginResourcePolicy: { policy: "same-origin" },
-    dnsPrefetchControl: { allow: false }, // Prevent data leakage
-    frameguard: { action: "deny" }, // Deny iframe embedding
+    crossOriginEmbedderPolicy: false, // Disabled to allow cross-origin images/resources
+    crossOriginOpenerPolicy: { policy: "unsafe-none" },
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Enabled for CORS support
+    dnsPrefetchControl: { allow: false },
+    frameguard: { action: "deny" },
     hsts: {
-        maxAge: 31536000, // 1 year
+        maxAge: 31536000,
         includeSubDomains: true,
         preload: true
     },
     ieNoOpen: true,
     noSniff: true,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    xssFilter: true // Enable XSS filter for older browsers
+    xssFilter: true
 }));
 
 // CORS configuration
@@ -69,10 +69,21 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
 ];
 
 app.use(cors({
-    origin: true, // TEMPORARY: Allow all origins to debug production connectivity
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+            callback(null, true);
+        } else {
+            console.warn(`[CORS] Rejected origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 
 // Body parser
