@@ -21,7 +21,7 @@ export const SecurityBanner: React.FC = () => {
           <div className="hidden lg:flex items-center gap-4 md:gap-6 border-l border-white/10 pl-4 md:pl-8">
             <div className="flex items-center gap-2">
               <Eye size={14} className="md:w-3 md:h-3 text-[#10b981] opacity-70" />
-              <span className="text-[10px] md:text-[9px] font-cyber font-bold text-[#94a3b8] uppercase tracking-[0.1em]">VIGILANCIA ACTIVA</span>
+              <span className="text-[10px] md:text-[9px] font-cyber font-bold text-[#94a3b8] uppercase tracking-[0.1em]">DENUNCIA ANÓNIMA ACTIVA</span>
             </div>
           </div>
         </div>
