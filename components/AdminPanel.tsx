@@ -11,6 +11,7 @@ export const AdminPanel: React.FC = () => {
   const [booting, setBooting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [decrypting, setDecrypting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -77,13 +78,21 @@ export const AdminPanel: React.FC = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setBooting(true);
+    setErrorMsg(null);
+
     setTimeout(() => {
-      const secureKey = import.meta.env.VITE_ADMIN_PASSWORD || "admin_fallback_disabled";
+      const secureKey = import.meta.env.VITE_ADMIN_PASSWORD;
+
+      if (!secureKey) {
+        setErrorMsg("⚠️ CONFIGURACIÓN INCOMPLETA: La variable VITE_ADMIN_PASSWORD no ha sido detectada en este despliegue.");
+        setBooting(false);
+        return;
+      }
 
       if (password === secureKey) {
         setIsAuthenticated(true);
       } else {
-        alert("CREDENCIALES INCORRECTAS - ACCESO DENEGADO");
+        setErrorMsg("❌ CREDENCIALES INCORRECTAS - ACCESO DENEGADO");
         setBooting(false);
       }
     }, 1500);
@@ -109,6 +118,12 @@ export const AdminPanel: React.FC = () => {
 
           <h2 className="text-2xl font-bold mb-3 text-[#1e293b]">Panel Administrativo</h2>
           <p className="text-sm text-[#64748b] mb-10">Solo personal autorizado</p>
+
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-2xl">
+              <p className="text-xs text-red-600 font-bold leading-tight">{errorMsg}</p>
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="relative">
