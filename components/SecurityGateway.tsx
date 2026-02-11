@@ -265,7 +265,8 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                                     { title: "Anonimato Total", text: "Toda la información es encriptada y tu dirección IP nunca se registra.", icon: "🔒" },
                                     { title: "Detalle es Clave", text: "Describe el 'Qué', 'Quién', 'Cuándo' y 'Dónde' con la mayor precisión posible.", icon: "📝" },
                                     { title: "Evidencia", text: "Si tienes fotos o documentos, prepáralos. Ayudan significativamente en la investigación.", icon: "📎" },
-                                    { title: "Seguridad Personal", text: "Asegúrate de estar en un lugar privado y seguro antes de proceder.", icon: "🛡️" }
+                                    { title: "Seguridad Personal", text: "Asegúrate de estar en un lugar privado y seguro antes de proceder.", icon: "🛡️" },
+                                    { title: "Impacto Ciudadano", text: "Tu denuncia es informativa, nos ayuda a generar reportes que serán enviados a las autoridades para que tomen acciones. Tu contribución es vital para mejorar nuestro país.", icon: "🇲🇽" }
                                 ].map((item, i) => (
                                     <div key={i} className="flex gap-4 items-start p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                         <span className="text-2xl mt-1">{item.icon}</span>
