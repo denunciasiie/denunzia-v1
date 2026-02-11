@@ -3,7 +3,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { LayoutDashboard, ShieldAlert, Terminal, Info } from 'lucide-react';
 import { SecurityBanner } from './SecurityBanner';
 
-export function Layout() {
+export function Layout({ onReset }: { onReset: () => void }) {
     const location = useLocation();
     const path = location.pathname;
 
@@ -28,7 +28,10 @@ export function Layout() {
             {/* Modern Cyber Navbar */}
             <nav className="glass-effect border-b border-white/5 shrink-0 z-50 px-2 md:px-6 py-2">
                 <div className="flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 md:gap-4 shrink-0 hover:opacity-80 transition-opacity">
+                    <div
+                        onClick={onReset}
+                        className="flex items-center gap-2 md:gap-4 shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
+                    >
                         <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-[0_0_10px_rgba(217,70,239,0.3)]" />
                         <div>
                             <h1 className="text-sm md:text-lg font-cyber font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] tracking-wider leading-none">
@@ -38,7 +41,7 @@ export function Layout() {
                                 Reporte Seguro
                             </p>
                         </div>
-                    </Link>
+                    </div>
 
                     <div className="flex gap-1 md:gap-2 overflow-x-auto no-scrollbar py-1">
                         <Link

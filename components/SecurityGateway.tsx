@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface SecurityGatewayProps {
-    onProceed: () => void;
+    onProceed: (targetPath?: string) => void;
 }
 
 export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) => {
@@ -53,8 +53,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
     }, []);
 
     const handleProceedToDashboard = () => {
-        onProceed();
-        navigate('/');
+        onProceed('/');
     };
 
     return (
@@ -280,8 +279,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
 
                             <button
                                 onClick={() => {
-                                    onProceed();
-                                    navigate('/denunciar');
+                                    onProceed('/denunciar');
                                 }}
                                 className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold text-lg hover:bg-[#6d28d9] transition-all shadow-xl shadow-[#7c3aed]/20 active:scale-95"
                             >

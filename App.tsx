@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { ReportForm } from './components/ReportForm';
@@ -7,6 +7,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { About } from './components/About';
 import { SecurityGateway } from './components/SecurityGateway';
 import { SplashScreen } from './components/SplashScreen';
+
 
 // Page Transition Wrapper Component
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -22,9 +23,8 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
-function App() {
-  // Splash screen state
-  // No persistence for testing/feedback as requested to see it every time
+function AppContent() {
+  const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(true);
   const [hasAcceptedSecurity, setHasAcceptedSecurity] = useState(false);
 
@@ -32,24 +32,27 @@ function App() {
     setShowSplash(false);
   };
 
-  const handleProceed = () => {
+  const handleProceed = (targetPath?: string) => {
     setHasAcceptedSecurity(true);
+    if (targetPath) {
+      setTimeout(() => navigate(targetPath), 0);
+    }
   };
 
   return (
-    <HashRouter>
+    <>
       {/* Splash Screen - Shows first on initial load */}
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
-      {/* Security Gateway Overlay - Blocks interaction until accepted, but allows SEO content to load behind */}
+      {/* Security Gateway Overlay */}
       {!showSplash && !hasAcceptedSecurity && (
-        <div className="fixed inset-0 z-[9999] bg-slate-900 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] bg-[#020617] overflow-y-auto">
           <SecurityGateway onProceed={handleProceed} />
         </div>
       )}
 
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<Layout onReset={() => setHasAcceptedSecurity(false)} />}>
           <Route index element={
             <PageTransition>
               <Dashboard />
@@ -70,7 +73,6 @@ function App() {
               <AdminPanel />
             </PageTransition>
           } />
-          {/* Fallback para 404 */}
           <Route path="*" element={
             <div className="flex flex-col items-center justify-center h-full text-slate-400">
               <h2 className="text-4xl font-cyber mb-4">404</h2>
@@ -79,6 +81,14 @@ function App() {
           } />
         </Route>
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <HashRouter>
+      <AppContent />
     </HashRouter>
   );
 }
