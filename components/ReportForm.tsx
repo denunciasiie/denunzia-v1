@@ -1,9 +1,61 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserRole, CrimeCategory, CrimeType } from '../types';
-import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, RefreshCw } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, RefreshCw, Info, Map as MapIcon } from 'lucide-react';
 import { LeafletMap } from './LeafletMap';
 import { analyzeReport } from '../services/geminiService';
 import { encryptData, sanitizeInput } from '../services/encryptionService';
+
+// Sub-component for Category Items to handle local tooltip state correctly
+const CategoryItem: React.FC<{
+  category: CrimeCategory;
+  examples: string;
+  selected: boolean;
+  onSelect: (cat: CrimeCategory) => void;
+}> = ({ category, examples, selected, onSelect }) => {
+  const [showHelp, setShowHelp] = useState(false);
+
+  return (
+    <div className="relative group">
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onSelect(category)}
+          className={`flex-1 text-left p-4 rounded-2xl border-2 transition-all text-xs font-bold leading-tight ${selected
+            ? 'bg-[#1e293b] border-[#1e293b] text-white'
+            : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#1e293b]/30'
+            }`}
+        >
+          {category}
+        </button>
+        <button
+          type="button"
+          onMouseEnter={() => setShowHelp(true)}
+          onMouseLeave={() => setShowHelp(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowHelp(!showHelp);
+          }}
+          className={`px-4 rounded-2xl border-2 transition-all hover:bg-slate-100 ${showHelp ? 'border-[#7c3aed] text-[#7c3aed] bg-[#7c3aed]/5' : 'border-slate-200 text-slate-400'}`}
+        >
+          <Info size={16} />
+        </button>
+      </div>
+      {/* Tooltip táctico */}
+      {showHelp && (
+        <div className="absolute z-[1100] left-0 right-0 bottom-full mb-2 p-4 bg-[#1e293b] text-white rounded-2xl shadow-2xl border border-white/20 animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-none">
+          <div className="flex items-start gap-2">
+            <AlertTriangle size={16} className="text-[#d946ef] shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-1">Ejemplos:</p>
+              <p className="text-xs font-medium leading-relaxed">{examples}</p>
+            </div>
+          </div>
+          <div className="absolute -bottom-2 right-10 w-4 h-4 bg-[#1e293b] rotate-45 border-r border-b border-white/20"></div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Simple Canvas CAPTCHA Component
 const Captcha: React.FC<{ onVerify: (isValid: boolean) => void }> = ({ onVerify }) => {
@@ -503,45 +555,15 @@ export const ReportForm: React.FC = () => {
                 [CrimeCategory.LEVEL_9]: "Portación de armas prohibidas, terrorismo.",
                 [CrimeCategory.LEVEL_10]: "Tala ilegal, maltrato animal, contaminación ambiental, incendios premeditados.",
                 [CrimeCategory.LEVEL_11]: "Cualquier otro delito no listado anteriormente."
-              }).map(([category, examples]) => {
-                const [showHelp, setShowHelp] = useState(false);
-                return (
-                  <div key={category} className="relative group">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setFormData({ ...formData, category: category as CrimeCategory })}
-                        className={`flex-1 text-left p-4 rounded-2xl border-2 transition-all text-xs font-bold leading-tight ${formData.category === category
-                          ? 'bg-[#1e293b] border-[#1e293b] text-white'
-                          : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#1e293b]/30'
-                          }`}
-                      >
-                        {category}
-                      </button>
-                      <button
-                        onMouseEnter={() => setShowHelp(true)}
-                        onMouseLeave={() => setShowHelp(false)}
-                        onClick={() => setShowHelp(!showHelp)}
-                        className={`p-4 rounded-2xl border-2 transition-all hover:bg-slate-100 ${showHelp ? 'border-[#7c3aed] text-[#7c3aed] bg-[#7c3aed]/5' : 'border-slate-200 text-slate-400'}`}
-                      >
-                        ?
-                      </button>
-                    </div>
-                    {/* Tooltip táctico */}
-                    {showHelp && (
-                      <div className="absolute z-[1100] left-0 right-0 bottom-full mb-2 p-4 bg-[#1e293b] text-white rounded-2xl shadow-2xl border border-white/20 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle size={16} className="text-[#d946ef] shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-1">Ejemplos:</p>
-                            <p className="text-xs font-medium leading-relaxed">{examples}</p>
-                          </div>
-                        </div>
-                        <div className="absolute -bottom-2 right-10 w-4 h-4 bg-[#1e293b] rotate-45 border-r border-b border-white/20"></div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              }).map(([category, examples]) => (
+                <CategoryItem
+                  key={category}
+                  category={category as CrimeCategory}
+                  examples={examples}
+                  selected={formData.category === category}
+                  onSelect={(cat) => setFormData({ ...formData, category: cat })}
+                />
+              ))}
             </div>
 
             {/* Continue Button */}
