@@ -185,9 +185,17 @@ export const ReportForm: React.FC = () => {
         const colonyBase = addr.suburb || addr.neighbourhood || addr.hamlet || addr.quarter || addr.village || '';
         const cp = addr.postcode ? ` C.P. ${addr.postcode}` : '';
 
-        // Final values
-        const municipality = addr.city || addr.town || addr.municipality || addr.borough || addr.county || '';
+        // Definir Estado primero para comparar
         const state = addr.state || addr.province || '';
+
+        // Prioridad para CDMX: Extraer Delegación/Municipio (borough o city_district) 
+        // para evitar que se repita "Mexico City" en ambos campos
+        let municipality = addr.borough || addr.city_district || addr.municipality || addr.city || addr.town || addr.county || '';
+
+        // Si el municipio es igual al estado (ej. Mexico City) y hay algo más específico, úsalo
+        if (municipality === state && (addr.city_district || addr.borough)) {
+          municipality = addr.city_district || addr.borough || municipality;
+        }
 
         setFormData(prev => ({
           ...prev,
