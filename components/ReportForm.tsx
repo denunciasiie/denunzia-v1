@@ -188,13 +188,19 @@ export const ReportForm: React.FC = () => {
         // Definir Estado primero para comparar
         const state = addr.state || addr.province || '';
 
-        // Prioridad para CDMX: Extraer Delegación/Municipio (borough o city_district) 
-        // para evitar que se repita "Mexico City" en ambos campos
-        let municipality = addr.borough || addr.city_district || addr.municipality || addr.city || addr.town || addr.county || '';
+        // Búsqueda exhaustiva de la Alcaldía/Municipio
+        // Nominatim en CDMX suele poner la Alcaldía en 'city_district' o 'county'
+        let municipality = addr.city_district || addr.borough || addr.county || addr.municipality || addr.city || addr.town || '';
 
-        // Si el municipio es igual al estado (ej. Mexico City) y hay algo más específico, úsalo
-        if (municipality === state && (addr.city_district || addr.borough)) {
-          municipality = addr.city_district || addr.borough || municipality;
+        // Lógica de limpieza para Ciudad de México
+        // Si el municipio detectado es genérico ("Mexico City") y hay algo más específico, lo intercambiamos
+        const genericNames = ['Mexico City', 'Ciudad de México', 'CDMX'];
+        if (genericNames.includes(municipality) || municipality === state) {
+          // Intentar buscar el distrito o alcaldía específicamente
+          const specificDistrict = addr.city_district || addr.borough || addr.county;
+          if (specificDistrict && !genericNames.includes(specificDistrict)) {
+            municipality = specificDistrict;
+          }
         }
 
         setFormData(prev => ({
