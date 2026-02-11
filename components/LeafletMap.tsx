@@ -238,26 +238,29 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
             );
           })}
 
-          {mode === 'view' && points.map((pt, idx) => (
-            <Circle
-              key={idx}
-              center={[pt.lat, pt.lng]}
-              radius={heatmapData ? 100 : 2000} // Smaller if heatmap is present
-              pathOptions={{
-                color: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
-                fillColor: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
-                fillOpacity: heatmapData ? 0.3 : 0.15,
-                weight: 1,
-              }}
-            >
-              <Popup className="cyber-popup">
-                <div className="font-cyber text-[10px] uppercase tracking-widest text-[#e6edf3]">
-                  <strong className={pt.category.includes('Corrupción') ? 'text-[#ffcc00]' : (pt.category.includes('Impacto') ? 'text-[#d946ef]' : 'text-[#6366f1]')}>{pt.category}</strong>
-                  <div className="mt-2 opacity-60">Zona de Impacto Detectada</div>
-                </div>
-              </Popup>
-            </Circle>
-          ))}
+          {mode === 'view' && points.map((pt, idx) => {
+            if (isNaN(pt.lat) || isNaN(pt.lng)) return null;
+            return (
+              <Circle
+                key={idx}
+                center={[pt.lat, pt.lng]}
+                radius={heatmapData ? 100 : 2000} // Smaller if heatmap is present
+                pathOptions={{
+                  color: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
+                  fillColor: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
+                  fillOpacity: heatmapData ? 0.3 : 0.15,
+                  weight: 1,
+                }}
+              >
+                <Popup className="cyber-popup">
+                  <div className="font-cyber text-[10px] uppercase tracking-widest text-[#e6edf3]">
+                    <strong className={pt.category.includes('Corrupción') ? 'text-[#ffcc00]' : (pt.category.includes('Impacto') ? 'text-[#d946ef]' : 'text-[#6366f1]')}>{pt.category}</strong>
+                    <div className="mt-2 opacity-60">Zona de Impacto Detectada</div>
+                  </div>
+                </Popup>
+              </Circle>
+            );
+          })}
         </MapContainer>
       </div>
 

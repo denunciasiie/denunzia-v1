@@ -36,17 +36,21 @@ export const Dashboard: React.FC = () => {
 
   // Procesamiento de datos para Mapa y Estadísticas
   const { filteredPoints, heatmapData, stats } = useMemo(() => {
-    const filtered = reports.filter(r =>
-      filterCategory === 'TODOS' || r.category === filterCategory
-    );
+    const filtered = reports.filter(r => {
+      const matchCategory = filterCategory === 'TODOS' || r.category === filterCategory;
+      const hasValidCoords = !isNaN(parseFloat(r.latitude)) && !isNaN(parseFloat(r.longitude));
+      return matchCategory && hasValidCoords;
+    });
 
     // Agrupación para el Mapa de Calor: { categorio: [ [lat, lng, intensidad], ... ] }
     const hData: { [key: string]: Array<[number, number, number]> } = {};
 
     filtered.forEach(r => {
+      const lat = parseFloat(r.latitude);
+      const lng = parseFloat(r.longitude);
       if (!hData[r.category]) hData[r.category] = [];
       const intensity = parseFloat(r.trust_score) || 0.8;
-      hData[r.category].push([parseFloat(r.latitude), parseFloat(r.longitude), intensity]);
+      hData[r.category].push([lat, lng, intensity]);
     });
 
     // Distribución para el gráfico de barras
