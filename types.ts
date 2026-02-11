@@ -8,9 +8,17 @@ export enum UserRole {
 }
 
 export enum CrimeCategory {
-  COMMON = "Delito Común",
-  HIGH_IMPACT = "Alto Impacto",
-  CORRUPTION = "Corrupción / Cuello Blanco"
+  LEVEL_1 = "Actos que causan la muerte o que tienen la intención de causar la muerte",
+  LEVEL_2 = "Actos que causan daños o que tienen la intención de causar daños a las personas",
+  LEVEL_3 = "Actos lesivos de naturaleza sexual",
+  LEVEL_4 = "Actos contra la propiedad que entrañan violencia o amenaza de violencia contra las personas",
+  LEVEL_5 = "Actos contra la propiedad solamente",
+  LEVEL_6 = "Actos que conllevan el uso de sustancias psicoactivas u otras drogas",
+  LEVEL_7 = "Actos que conllevan fraude, engaño o corrupción",
+  LEVEL_8 = "Actos contra el orden público, la autoridad y las disposiciones del Estado",
+  LEVEL_9 = "Actos contra la seguridad pública y la seguridad del Estado",
+  LEVEL_10 = "Actos contra el entorno natural",
+  LEVEL_11 = "Otros actos delictivos no clasificados en otra parte"
 }
 
 export enum CrimeType {

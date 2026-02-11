@@ -246,8 +246,10 @@ export const LeafletMap: React.FC<MapProps> = React.memo(({ mode, onLocationSele
                 center={[pt.lat, pt.lng]}
                 radius={heatmapData ? 100 : 2000} // Smaller if heatmap is present
                 pathOptions={{
-                  color: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
-                  fillColor: pt.category.includes('Corrupción') ? '#ffcc00' : (pt.category.includes('Impacto') ? '#d946ef' : '#6366f1'),
+                  color: pt.category.includes('corrupción') ? '#ffcc00' :
+                    (pt.category.includes('muerte') || pt.category.includes('daños a las personas') || pt.category.includes('sexual') || pt.category.includes('violencia') || pt.category.includes('seguridad pública') ? '#d946ef' : '#6366f1'),
+                  fillColor: pt.category.includes('corrupción') ? '#ffcc00' :
+                    (pt.category.includes('muerte') || pt.category.includes('daños a las personas') || pt.category.includes('sexual') || pt.category.includes('violencia') || pt.category.includes('seguridad pública') ? '#d946ef' : '#6366f1'),
                   fillOpacity: heatmapData ? 0.3 : 0.15,
                   weight: 1,
                 }}

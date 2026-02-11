@@ -110,6 +110,7 @@ export const ReportForm: React.FC = () => {
   const [formData, setFormData] = useState({
     role: '' as UserRole | '',
     customRole: '',
+    category: '' as CrimeCategory | '',
     lat: null as number | null,
     lng: null as number | null,
     addressDetails: {
@@ -245,6 +246,10 @@ export const ReportForm: React.FC = () => {
       setErrorMsg('Especifica el tipo de denunciante');
       return false;
     }
+    if (!formData.category) {
+      setErrorMsg('Selecciona la categoría del delito');
+      return false;
+    }
     return true;
   };
 
@@ -318,7 +323,7 @@ export const ReportForm: React.FC = () => {
         id,
         isAnonymous: true,
         role: formData.role === UserRole.OTHER ? formData.customRole : formData.role,
-        category: CrimeCategory.COMMON,
+        category: formData.category,
         type: CrimeType.OTHER,
         encryptedData,
         encryptedKey,
@@ -411,7 +416,7 @@ export const ReportForm: React.FC = () => {
         </div>
       )}
 
-      {/* Step 1: Map + Role Selection */}
+      {/* Step 1: Map + Role + Category Selection */}
       {step === 1 && (
         <div className="flex flex-col min-h-[calc(100vh-64px)] pb-10">
           {/* Map Section */}
@@ -446,64 +451,109 @@ export const ReportForm: React.FC = () => {
           {/* Role Selection Section */}
           <div className="bg-white p-6 rounded-t-3xl shadow-2xl">
             <h2 className="text-lg font-bold text-[#1e293b] mb-4">
-              Denuncias algún delito como:
+              Denuncias como:
             </h2>
 
-            <div className="space-y-3 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-8">
               {[
                 { value: UserRole.CITIZEN, label: 'Ciudadano' },
-                { value: UserRole.GOVERNMENT, label: 'Empleado de Gobierno' },
+                { value: UserRole.GOVERNMENT, label: 'Funcionario' },
                 { value: UserRole.COMPANY, label: 'Empresa' },
-                { value: UserRole.MILITARY, label: 'Fuerzas Armadas' },
-                { value: UserRole.JOURNALISM, label: 'Medios informativos (Periodismo)' }
+                { value: UserRole.MILITARY, label: 'Militar' },
+                { value: UserRole.JOURNALISM, label: 'Periodista' },
+                { value: UserRole.OTHER, label: 'Otro' }
               ].map(option => (
                 <button
                   key={option.value}
-                  onClick={() => setFormData({ ...formData, role: option.value, customRole: '' })}
-                  className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${formData.role === option.value
-                    ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed] font-bold'
-                    : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#7c3aed]/30'
+                  onClick={() => setFormData({ ...formData, role: option.value, customRole: option.value === UserRole.OTHER ? formData.customRole : '' })}
+                  className={`text-center p-3 rounded-xl border-2 transition-all text-xs font-bold ${formData.role === option.value
+                    ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed]'
+                    : 'bg-slate-50 border-slate-200 text-[#64748b]'
                     }`}
                 >
                   {option.label}
                 </button>
               ))}
+            </div>
 
-              {/* Otro (especifica) */}
-              <div className="space-y-2">
-                <button
-                  onClick={() => setFormData({ ...formData, role: UserRole.OTHER })}
-                  className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${formData.role === UserRole.OTHER
-                    ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed] font-bold'
-                    : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#7c3aed]/30'
-                    }`}
-                >
-                  Otro (especifica)
-                </button>
+            {formData.role === UserRole.OTHER && (
+              <input
+                type="text"
+                placeholder="Especifica el tipo de denunciante"
+                value={formData.customRole}
+                onChange={e => setFormData({ ...formData, customRole: e.target.value })}
+                className="w-full p-4 border-2 border-[#7c3aed]/30 rounded-2xl bg-white text-[#1e293b] mb-6 focus:outline-none focus:border-[#7c3aed]"
+              />
+            )}
 
-                {formData.role === UserRole.OTHER && (
-                  <input
-                    type="text"
-                    placeholder="Especifica el tipo de denunciante"
-                    value={formData.customRole}
-                    onChange={e => setFormData({ ...formData, customRole: e.target.value })}
-                    className="w-full p-4 border-2 border-[#7c3aed]/30 rounded-2xl bg-white text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#7c3aed]"
-                  />
-                )}
-              </div>
+            {/* Crime Category Selection - UNODC ICCS */}
+            <h2 className="text-lg font-bold text-[#1e293b] mb-4">
+              Categoría del Incidente:
+            </h2>
+            <div className="space-y-3 mb-8">
+              {Object.entries({
+                [CrimeCategory.LEVEL_1]: "Homicidio, feminicidio, tentativa de homicidio, desaparición forzada.",
+                [CrimeCategory.LEVEL_2]: "Lesiones, asalto físico, amenazas graves, extorsión, pago de piso, secuestro.",
+                [CrimeCategory.LEVEL_3]: "Abuso sexual, violación, acoso sexual.",
+                [CrimeCategory.LEVEL_4]: "Robo a mano armada, secuestro express, daños a propiedad de forma violenta, con armas o maquinaria.",
+                [CrimeCategory.LEVEL_5]: "Robo sin violencia, vandalismo, grafiti, daños a propiedad solamente.",
+                [CrimeCategory.LEVEL_6]: "Posesión, tráfico de drogas, consumo público, venta, fabricación.",
+                [CrimeCategory.LEVEL_7]: "Estafas, sobornos, desvío de recursos públicos, enriquecimiento ilícito, moches, mordidas, clausuras arbitrarias.",
+                [CrimeCategory.LEVEL_8]: "Alteración del orden, desacato, obstrucción de vías, daño a propiedad pública y/o privada.",
+                [CrimeCategory.LEVEL_9]: "Portación de armas prohibidas, terrorismo.",
+                [CrimeCategory.LEVEL_10]: "Tala ilegal, maltrato animal, contaminación ambiental, incendios premeditados.",
+                [CrimeCategory.LEVEL_11]: "Cualquier otro delito no listado anteriormente."
+              }).map(([category, examples]) => {
+                const [showHelp, setShowHelp] = useState(false);
+                return (
+                  <div key={category} className="relative group">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setFormData({ ...formData, category: category as CrimeCategory })}
+                        className={`flex-1 text-left p-4 rounded-2xl border-2 transition-all text-xs font-bold leading-tight ${formData.category === category
+                          ? 'bg-[#1e293b] border-[#1e293b] text-white'
+                          : 'bg-slate-50 border-slate-200 text-[#64748b] hover:border-[#1e293b]/30'
+                          }`}
+                      >
+                        {category}
+                      </button>
+                      <button
+                        onMouseEnter={() => setShowHelp(true)}
+                        onMouseLeave={() => setShowHelp(false)}
+                        onClick={() => setShowHelp(!showHelp)}
+                        className={`p-4 rounded-2xl border-2 transition-all hover:bg-slate-100 ${showHelp ? 'border-[#7c3aed] text-[#7c3aed] bg-[#7c3aed]/5' : 'border-slate-200 text-slate-400'}`}
+                      >
+                        ?
+                      </button>
+                    </div>
+                    {/* Tooltip táctico */}
+                    {showHelp && (
+                      <div className="absolute z-[1100] left-0 right-0 bottom-full mb-2 p-4 bg-[#1e293b] text-white rounded-2xl shadow-2xl border border-white/20 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle size={16} className="text-[#d946ef] shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-1">Ejemplos:</p>
+                            <p className="text-xs font-medium leading-relaxed">{examples}</p>
+                          </div>
+                        </div>
+                        <div className="absolute -bottom-2 right-10 w-4 h-4 bg-[#1e293b] rotate-45 border-r border-b border-white/20"></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Continue Button */}
             <button
               onClick={handleStep1Continue}
-              className="w-full bg-[#1e293b] text-white py-4 px-6 rounded-full font-bold hover:bg-[#0f172a] transition-all shadow-lg"
+              className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold hover:bg-[#6d28d9] transition-all shadow-xl shadow-[#7c3aed]/30"
             >
-              Continuar
+              CONTINUAR AL REPORTE
             </button>
 
-            {/* Footer Note */}
-            <p className="text-center text-xs text-[#94a3b8] mt-4">
-              Recuerda que tu denuncia es totalmente anónima
+            <p className="text-center text-[10px] text-[#94a3b8] mt-4 uppercase tracking-widest">
+              Garantizamos el anonimato total bajo protocolos internacionales
             </p>
           </div>
         </div>

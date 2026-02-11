@@ -57,10 +57,21 @@ export const Dashboard: React.FC = () => {
 
     // Distribución para el gráfico de barras
     const categories = Object.values(CrimeCategory);
+
+    // Mapeo táctico de colores para respetar el diseño actual
+    const getCategoryColor = (cat: string) => {
+      // Corrupción (Purple)
+      if (cat.includes('corrupción')) return '#7c3aed';
+      // Alto Impacto (Pink)
+      if (cat.includes('muerte') || cat.includes('daños a las personas') || cat.includes('sexual') || cat.includes('violencia') || cat.includes('seguridad pública')) return '#d946ef';
+      // Delito Común / Otros (Indigo)
+      return '#6366f1';
+    };
+
     const distribution = categories.map(cat => ({
       name: cat,
       count: reports.filter(r => r.category === cat).length,
-      color: cat === CrimeCategory.CORRUPTION ? '#7c3aed' : (cat === CrimeCategory.HIGH_IMPACT ? '#d946ef' : '#6366f1')
+      color: getCategoryColor(cat)
     }));
 
     return {
