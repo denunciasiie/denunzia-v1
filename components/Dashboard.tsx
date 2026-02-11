@@ -48,6 +48,8 @@ export const Dashboard: React.FC = () => {
     filtered.forEach(r => {
       const lat = parseFloat(r.latitude);
       const lng = parseFloat(r.longitude);
+      if (isNaN(lat) || isNaN(lng)) return;
+
       if (!hData[r.category]) hData[r.category] = [];
       const intensity = parseFloat(r.trust_score) || 0.8;
       hData[r.category].push([lat, lng, intensity]);
@@ -74,28 +76,28 @@ export const Dashboard: React.FC = () => {
   }, [reports, filterCategory]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] p-4 md:p-6">
+    <div className="min-h-screen bg-[#020617] p-4 md:p-6 text-[#f8fafc] selection:bg-[#d946ef]/30">
       {/* Header Táctico */}
       <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[#1e293b] mb-2 flex items-center gap-3">
-            <Database className="text-[#7c3aed]" />
+            <Database className="text-[#d946ef]" />
             Inteligencia Táctica
           </h1>
-          <p className="text-[#64748b] text-sm font-medium">
+          <p className="text-[#94a3b8] text-sm font-medium font-cyber uppercase tracking-wider">
             Visualización avanzada de incidentes con redes de calor dinámicas
           </p>
         </div>
 
         {/* Selector de Filtro de Categoría */}
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl shadow-md border border-slate-100">
-          <div className="p-2 bg-[#7c3aed]/10 rounded-xl">
-            <Filter size={16} className="text-[#7c3aed]" />
+        <div className="flex items-center gap-2 bg-[#0f172a]/80 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/5">
+          <div className="p-2 bg-[#d946ef]/10 rounded-xl">
+            <Filter size={16} className="text-[#d946ef]" />
           </div>
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="bg-transparent border-none text-xs font-bold text-[#1e293b] outline-none pr-4 py-1 uppercase tracking-tight"
+            className="bg-transparent border-none text-xs font-bold text-white outline-none pr-4 py-1 uppercase tracking-tight font-cyber"
           >
             <option value="TODOS">TODOS LOS DELITOS</option>
             {Object.values(CrimeCategory).map(cat => (
@@ -130,22 +132,22 @@ export const Dashboard: React.FC = () => {
             />
 
             {/* Leyenda Táctica del Mapa */}
-            <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl border border-slate-200/50 z-[1000]">
-              <h3 className="text-[10px] font-black text-[#64748b] mb-4 uppercase tracking-[0.2em] border-b border-slate-100 pb-2">
+            <div className="absolute top-4 left-4 bg-[#0f172a]/95 backdrop-blur-md p-5 rounded-2xl shadow-2xl border border-white/10 z-[1000]">
+              <h3 className="text-[10px] font-black text-[#94a3b8] mb-4 uppercase tracking-[0.2em] border-b border-white/5 pb-2 font-cyber">
                 Densidad Táctica
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded-full bg-[#6366f1] shadow-[0_0_8px_#6366f1] border-2 border-white"></div>
-                  <span className="text-[11px] font-bold text-[#1e293b]">Delito Común</span>
+                  <div className="w-4 h-4 rounded-full bg-[#6366f1] shadow-[0_0_8px_#6366f1] border-2 border-white/20"></div>
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider">Delito Común</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded-full bg-[#d946ef] shadow-[0_0_8px_#d946ef] border-2 border-white"></div>
-                  <span className="text-[11px] font-bold text-[#1e293b]">Alto Impacto</span>
+                  <div className="w-4 h-4 rounded-full bg-[#d946ef] shadow-[0_0_8px_#d946ef] border-2 border-white/20"></div>
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider">Alto Impacto</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded-full bg-[#fbbf24] shadow-[0_0_8px_#fbbf24] border-2 border-white"></div>
-                  <span className="text-[11px] font-bold text-[#1e293b]">Corrupción</span>
+                  <div className="w-4 h-4 rounded-full bg-[#fbbf24] shadow-[0_0_8px_#fbbf24] border-2 border-white/20"></div>
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider">Corrupción</span>
                 </div>
               </div>
             </div>
@@ -166,17 +168,17 @@ export const Dashboard: React.FC = () => {
         <aside className="flex flex-col gap-6">
 
           {/* Parámetros del Mapa de Calor */}
-          <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/50">
+          <div className="bg-[#0f172a]/40 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/5">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-[#d946ef]/10 rounded-xl">
                 <Settings2 size={20} className="text-[#d946ef]" />
               </div>
-              <h2 className="text-lg font-bold text-[#1e293b]">Parámetros</h2>
+              <h2 className="text-lg font-bold text-white font-cyber">Parámetros</h2>
             </div>
 
             <div className="space-y-8">
               <div>
-                <div className="flex justify-between text-[10px] font-black text-[#64748b] mb-3 uppercase tracking-widest">
+                <div className="flex justify-between text-[10px] font-black text-[#94a3b8] mb-3 uppercase tracking-widest font-cyber">
                   <span>Radio de Influencia</span>
                   <span className="text-[#d946ef]">{heatmapRadius}px</span>
                 </div>
@@ -184,12 +186,12 @@ export const Dashboard: React.FC = () => {
                   type="range" min="10" max="80" step="1"
                   value={heatmapRadius}
                   onChange={(e) => setHeatmapRadius(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#d946ef]"
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#d946ef]"
                 />
               </div>
 
               <div>
-                <div className="flex justify-between text-[10px] font-black text-[#64748b] mb-3 uppercase tracking-widest">
+                <div className="flex justify-between text-[10px] font-black text-[#94a3b8] mb-3 uppercase tracking-widest font-cyber">
                   <span>Desenfoque (Blur)</span>
                   <span className="text-[#d946ef]">{heatmapBlur}px</span>
                 </div>
@@ -197,19 +199,19 @@ export const Dashboard: React.FC = () => {
                   type="range" min="5" max="50" step="1"
                   value={heatmapBlur}
                   onChange={(e) => setHeatmapBlur(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#d946ef]"
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#d946ef]"
                 />
               </div>
             </div>
           </div>
 
           {/* Gráfico de Distribución */}
-          <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/50">
+          <div className="bg-[#0f172a]/40 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/5">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-[#7c3aed]/10 rounded-xl">
-                <TrendingUp size={20} className="text-[#7c3aed]" />
+              <div className="p-3 bg-[#3b82f6]/10 rounded-xl">
+                <TrendingUp size={20} className="text-[#3b82f6]" />
               </div>
-              <h2 className="text-lg font-bold text-[#1e293b]">Distribución</h2>
+              <h2 className="text-lg font-bold text-white font-cyber">Distribución</h2>
             </div>
 
             <div className="h-[220px] mb-6">
@@ -233,12 +235,12 @@ export const Dashboard: React.FC = () => {
 
             <div className="space-y-3">
               {stats.map((stat, i) => (
-                <div key={i} className="flex justify-between items-center p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-200 transition-colors">
+                <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stat.color }}></div>
-                    <span className="text-[10px] font-bold text-[#475569] truncate max-w-[120px]">{stat.name}</span>
+                    <span className="text-[10px] font-bold text-[#94a3b8] truncate max-w-[120px] uppercase font-cyber">{stat.name}</span>
                   </div>
-                  <span className="text-sm font-black text-[#1e293b]">{stat.count}</span>
+                  <span className="text-sm font-black text-white">{stat.count}</span>
                 </div>
               ))}
             </div>

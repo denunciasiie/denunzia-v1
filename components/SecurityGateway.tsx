@@ -58,13 +58,19 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] relative overflow-x-hidden selection:bg-[#7c3aed]/30 font-sans">
+        <div className="min-h-screen bg-[#020617] relative overflow-x-hidden selection:bg-[#d946ef]/30 font-sans text-[#f8fafc]">
+            {/* Background Decor */}
+            <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#d946ef]/10 rounded-full blur-[120px] animate-pulse"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-[#3b82f6]/10 rounded-full blur-[150px]"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
+            </div>
             {/* Top Right Buttons */}
             <div className="fixed top-4 right-4 z-[9999] flex gap-3">
                 {/* Ver Mapa de Reportes Button */}
                 <button
                     onClick={handleProceedToDashboard}
-                    className="bg-white/90 text-[#6366f1] border-2 border-[#6366f1]/30 py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-bold cursor-pointer shadow-lg hover:bg-white transition-all active:scale-95 flex items-center gap-2"
+                    className="bg-white/5 backdrop-blur-md text-[#3b82f6] border border-white/10 py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-cyber font-bold cursor-pointer shadow-xl hover:bg-white/10 transition-all active:scale-95 flex items-center gap-2"
                     aria-label="Ver mapa de reportes"
                 >
                     📊 <span className="hidden sm:inline">Ver Mapa de Reportes</span><span className="sm:hidden">Mapa</span>
@@ -73,7 +79,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                 {/* Panic/Exit Button */}
                 <button
                     onClick={handlePanic}
-                    className="bg-[#7c3aed] text-white border-none py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-bold cursor-pointer shadow-lg shadow-[#7c3aed]/40 hover:bg-[#6d28d9] transition-all active:scale-95"
+                    className="bg-red-500 text-white border-none py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-cyber font-bold cursor-pointer shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95"
                     aria-label="Botón de salida rápida"
                     title="Presiona ESC o haz clic para salir inmediatamente"
                 >
@@ -91,8 +97,8 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                     </div>
 
                     {/* Welcome Message */}
-                    <h1 className="text-3xl md:text-4xl font-bold text-[#1e293b] mb-12 tracking-tight">
-                        Bienvenido
+                    <h1 className="text-3xl md:text-5xl font-cyber font-black bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mb-12 tracking-[0.2em] uppercase">
+                        Bienvenidos
                     </h1>
 
                     {/* Action Buttons */}
@@ -100,27 +106,30 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                         {/* Main Report Button */}
                         <button
                             onClick={() => setShowChecklistModal(true)}
-                            className="group relative overflow-hidden bg-[#7c3aed] hover:bg-[#6d28d9] border-none rounded-full py-4 px-6 cursor-pointer shadow-xl shadow-[#7c3aed]/30 transition-all hover:shadow-[#7c3aed]/50 active:scale-98"
+                            className="group relative overflow-hidden bg-gradient-to-r from-[#d946ef] to-[#8b5cf6] border-none rounded-2xl py-6 px-8 cursor-pointer shadow-2xl shadow-[#d946ef]/20 transition-all hover:scale-[1.02] active:scale-98"
                         >
-                            <div className="text-center">
-                                <div className="text-lg md:text-xl font-bold text-white mb-2 uppercase tracking-wide">
+                            <div className="relative z-10 text-center">
+                                <div className="text-xl md:text-2xl font-cyber font-black text-white mb-2 uppercase tracking-widest">
                                     Haz tu Denuncia
                                 </div>
-                                <div className="text-xs md:text-sm font-medium text-white/80 leading-relaxed px-2">
-                                    Tu denuncia es anónima, no guardamos datos de ubicación ni personales.
+                                <div className="text-xs md:text-sm font-medium text-white/90 leading-relaxed max-w-xs mx-auto">
+                                    Tu reporte es 100% anónimo con cifrado de grado militar de extremo a extremo.
                                 </div>
                             </div>
+                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </button>
 
                         {/* Emergency Warning */}
-                        <div className="bg-red-500/10 border-2 border-red-500/20 rounded-2xl p-4 md:p-5 flex items-center gap-4 animate-pulse">
-                            <span className="text-2xl md:text-3xl">⚠️</span>
+                        <div className="bg-red-500/5 border border-red-500/30 rounded-2xl p-4 md:p-6 flex items-center gap-5 backdrop-blur-sm shadow-xl">
+                            <div className="bg-red-500/20 p-3 rounded-full animate-pulse border border-red-500/20">
+                                <span className="text-2xl md:text-3xl">⚠️</span>
+                            </div>
                             <div className="text-left">
-                                <p className="text-red-600 font-bold text-sm md:text-base leading-tight">
-                                    En caso de peligro inmediato, llama al 911
+                                <p className="text-red-400 font-cyber font-bold text-sm md:text-base leading-tight uppercase tracking-wider">
+                                    En caso de peligro inmediato: LLAMA AL 911
                                 </p>
-                                <p className="text-red-500/80 text-[10px] md:text-xs font-medium uppercase tracking-wider mt-1">
-                                    Esta plataforma NO recibe emergencias de respuesta inmediata
+                                <p className="text-[#94a3b8] text-[9px] md:text-[10px] font-medium uppercase tracking-[0.1em] mt-1.5 leading-relaxed">
+                                    Este servidor no es un sistema de respuesta de emergencia directa.
                                 </p>
                             </div>
                         </div>
@@ -128,14 +137,14 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                         {/* TOR Browser Button */}
                         <button
                             onClick={() => setShowTorModal(true)}
-                            className="group bg-white/80 hover:bg-white border-2 border-[#6366f1]/30 rounded-full py-4 px-6 cursor-pointer transition-all hover:border-[#6366f1]/50 active:scale-98 shadow-lg"
+                            className="group bg-[#0f172a]/40 hover:bg-[#0f172a]/60 backdrop-blur-md border border-white/5 rounded-2xl py-6 px-8 cursor-pointer transition-all hover:border-[#d946ef]/30 active:scale-98 shadow-xl"
                         >
                             <div className="text-center">
-                                <div className="text-lg md:text-xl font-bold text-[#1e293b] mb-2">
-                                    Buscador TOR
+                                <div className="text-lg md:text-xl font-cyber font-bold text-white mb-2 uppercase tracking-widest">
+                                    Red TOR (Onion)
                                 </div>
-                                <div className="text-xs md:text-sm font-medium text-[#64748b] leading-relaxed px-2">
-                                    Enlace a Buscador TOR para mayor seguridad al hacer la denuncia.
+                                <div className="text-xs md:text-sm font-medium text-[#94a3b8] leading-relaxed max-w-xs mx-auto">
+                                    Accede mediante nuestro enlace .onion para anonimato extremo de IP.
                                 </div>
                             </div>
                         </button>

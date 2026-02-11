@@ -24,38 +24,15 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 
 function App() {
   // Splash screen state
-  const [showSplash, setShowSplash] = useState(() => {
-    try {
-      return sessionStorage.getItem('splash_shown') !== 'true';
-    } catch (e) {
-      return true;
-    }
-  });
-
-  // Initialize from sessionStorage to avoid re-prompting on reload
-  const [hasAcceptedSecurity, setHasAcceptedSecurity] = useState(() => {
-    try {
-      return sessionStorage.getItem('security_accepted') === 'true';
-    } catch (e) {
-      return false;
-    }
-  });
+  // No persistence for testing/feedback as requested to see it every time
+  const [showSplash, setShowSplash] = useState(true);
+  const [hasAcceptedSecurity, setHasAcceptedSecurity] = useState(false);
 
   const handleSplashComplete = () => {
-    try {
-      sessionStorage.setItem('splash_shown', 'true');
-    } catch (e) {
-      console.error('Storage access blocked', e);
-    }
     setShowSplash(false);
   };
 
   const handleProceed = () => {
-    try {
-      sessionStorage.setItem('security_accepted', 'true');
-    } catch (e) {
-      console.error('Storage access blocked', e);
-    }
     setHasAcceptedSecurity(true);
   };
 
