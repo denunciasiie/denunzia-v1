@@ -280,7 +280,7 @@ export const AdminPanel: React.FC = () => {
                     <div className="absolute top-0 right-0 p-6 opacity-10">
                       {decrypting ? (
                         <Lock size={32} className="text-[#ff4d4d] animate-pulse" />
-                      ) : selectedReport.decrypted_narrative ? (
+                      ) : (selectedReport.narrative || selectedReport.decrypted_narrative) ? (
                         <Unlock size={32} className="text-[#10b981]" />
                       ) : (
                         <Lock size={32} className="text-[#ff4d4d]" />
@@ -289,9 +289,9 @@ export const AdminPanel: React.FC = () => {
                     <div className="flex items-center gap-3 text-[#d946ef] font-cyber text-xs mb-6 border-b border-white/5 pb-4">
                       <Terminal size={16} />
                       {decrypting ? (
-                        <span>DESCIFRANDO CON CLAVE PRIVADA RSA-4096...</span>
-                      ) : selectedReport.decrypted_narrative ? (
-                        <span className="text-[#10b981]">✓ NARRATIVA DESCIFRADA (RSA-4096 + AES-256-GCM)</span>
+                        <span>PROCESANDO NARRATIVA...</span>
+                      ) : (selectedReport.narrative || selectedReport.decrypted_narrative) ? (
+                        <span className="text-[#10b981]">✓ NARRATIVA DISPONIBLE {selectedReport.narrative ? '(Texto Plano)' : '(Descifrada)'}</span>
                       ) : (
                         <span className="text-[#ff4d4d]">⚠️ DATOS CIFRADOS (Clave privada no disponible)</span>
                       )}
@@ -300,9 +300,9 @@ export const AdminPanel: React.FC = () => {
                       <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d946ef]"></div>
                       </div>
-                    ) : selectedReport.decrypted_narrative ? (
+                    ) : (selectedReport.narrative || selectedReport.decrypted_narrative) ? (
                       <p className="text-[#e6edf3] text-sm whitespace-pre-wrap leading-relaxed font-sans selection:bg-[#d946ef]/30">
-                        {selectedReport.decrypted_narrative}
+                        {selectedReport.narrative || selectedReport.decrypted_narrative}
                       </p>
                     ) : (
                       <div className="space-y-4">

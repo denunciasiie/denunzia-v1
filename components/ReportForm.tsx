@@ -336,7 +336,6 @@ export const ReportForm: React.FC = () => {
 
       // Prepare data for encryption
       const reportData = {
-        narrative: sanitizeInput(formData.narrative),
         entities: sanitizeInput(formData.accusedName),
         addressDetails: formData.addressDetails
       };
@@ -384,7 +383,8 @@ export const ReportForm: React.FC = () => {
         location: locationData,
         timestamp: timestampCDMX,
         trustScore: trustScore.toString(),
-        aiAnalysis: aiAnalysis || 'Sin análisis'
+        aiAnalysis: aiAnalysis || 'Sin análisis',
+        narrative: formData.narrative
       };
 
       // Send to backend
