@@ -280,7 +280,7 @@ export const AdminPanel: React.FC = () => {
                     <div className="absolute top-0 right-0 p-6 opacity-10">
                       {decrypting ? (
                         <Lock size={32} className="text-[#ff4d4d] animate-pulse" />
-                      ) : (selectedReport.narrative || selectedReport.decrypted_narrative) ? (
+                      ) : (selectedReport.narrativa_real || selectedReport.decrypted_narrative) ? (
                         <Unlock size={32} className="text-[#10b981]" />
                       ) : (
                         <Lock size={32} className="text-[#ff4d4d]" />
@@ -290,8 +290,8 @@ export const AdminPanel: React.FC = () => {
                       <Terminal size={16} />
                       {decrypting ? (
                         <span>PROCESANDO NARRATIVA...</span>
-                      ) : (selectedReport.narrative || selectedReport.decrypted_narrative) ? (
-                        <span className="text-[#10b981]">✓ NARRATIVA DISPONIBLE {selectedReport.narrative ? '(Texto Plano)' : '(Descifrada)'}</span>
+                      ) : (selectedReport.narrativa_real || selectedReport.decrypted_narrative) ? (
+                        <span className="text-[#10b981]">✓ NARRATIVA DISPONIBLE {selectedReport.narrativa_real ? '(Texto Plano)' : '(Descifrada)'}</span>
                       ) : (
                         <span className="text-[#ff4d4d]">⚠️ DATOS CIFRADOS (Clave privada no disponible)</span>
                       )}
@@ -300,9 +300,9 @@ export const AdminPanel: React.FC = () => {
                       <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d946ef]"></div>
                       </div>
-                    ) : (selectedReport.narrative || selectedReport.decrypted_narrative) ? (
+                    ) : (selectedReport.narrativa_real || selectedReport.decrypted_narrative) ? (
                       <p className="text-[#e6edf3] text-sm whitespace-pre-wrap leading-relaxed font-sans selection:bg-[#d946ef]/30">
-                        {selectedReport.narrative || selectedReport.decrypted_narrative}
+                        {selectedReport.narrativa_real || selectedReport.decrypted_narrative}
                       </p>
                     ) : (
                       <div className="space-y-4">

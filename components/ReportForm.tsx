@@ -384,7 +384,7 @@ export const ReportForm: React.FC = () => {
         timestamp: timestampCDMX,
         trustScore: trustScore.toString(),
         aiAnalysis: aiAnalysis || 'Sin análisis',
-        narrative: formData.narrative
+        narrativa_real: formData.narrative
       };
 
       // Send to backend

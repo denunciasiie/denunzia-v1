@@ -309,7 +309,7 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             timestamp,
             trustScore,
             aiAnalysis,
-            narrative
+            narrativa_real
         } = body;
 
         const files = req.files || [];
@@ -326,14 +326,14 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
         // 1. Insert Report (Metadata)
         const result = await query(`
           INSERT INTO reports (
-            id, is_anonymous, role, category, type, custom_crime_type, narrative,
+            id, is_anonymous, role, category, type, custom_crime_type, narrativa_real,
             encrypted_data, encrypted_key, iv, algorithm,
             latitude, longitude, address_street, address_colony, address_zipcode, address_references,
             timestamp, trust_score, ai_analysis, status
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
           RETURNING id, created_at
         `, [
-            id, isAnonymous ?? true, role, category, type, customCrimeType, narrative,
+            id, isAnonymous ?? true, role, category, type, customCrimeType, narrativa_real,
             encryptedData, encryptedKey, iv, algorithm || 'RSA-OAEP-4096 + AES-256-GCM',
             location?.lat, location?.lng,
             location?.details?.street, location?.details?.colony, location?.details?.zipCode, location?.details?.references,
@@ -393,7 +393,7 @@ app.get('/api/reports', async (req, res) => {
 
         let queryText = `
       SELECT 
-        id, is_anonymous, role, category, type, custom_crime_type, narrative,
+        id, is_anonymous, role, category, type, custom_crime_type, narrativa_real,
         latitude, longitude, address_street, address_colony,
         timestamp, trust_score, ai_analysis, status, created_at
       FROM reports

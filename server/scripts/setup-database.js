@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS reports (
     category VARCHAR(100) NOT NULL,
     type VARCHAR(100) NOT NULL,
     custom_crime_type VARCHAR(100),
-    narrative TEXT,
+    narrativa_real TEXT,
     
     -- Encrypted Data
     encrypted_data TEXT NOT NULL,
