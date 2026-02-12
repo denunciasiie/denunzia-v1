@@ -20,7 +20,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 <img
                     src="/denunzia_logo.png"
                     alt="DenunZIA Logo"
-                    className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.8)]"
+                    className="w-48 h-48 md:w-64 md:h-64 object-contain drop-shadow-[0_0_30px_rgba(139,92,246,0.8)]"
                 />
                 <h1 className="text-white text-2xl md:text-3xl font-bold mt-6 tracking-wide">
                     DENUNCIA

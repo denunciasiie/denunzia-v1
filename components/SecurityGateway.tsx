@@ -92,7 +92,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                 <div className="w-full max-w-md text-center">
                     {/* Logo/Icon */}
                     <div className="mb-8 flex justify-center transform hover:scale-105 transition-transform duration-500">
-                        <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-[0_0_20px_rgba(124,58,237,0.4)]" />
+                        <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-56 h-56 md:w-80 md:h-80 object-contain drop-shadow-[0_0_20px_rgba(124,58,237,0.4)]" />
                     </div>
 
                     {/* Welcome Message */}
