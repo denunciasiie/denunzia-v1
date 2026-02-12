@@ -119,16 +119,16 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                         </button>
 
                         {/* Emergency Warning */}
-                        <div className="bg-red-500/5 border border-red-500/30 rounded-2xl p-4 md:p-6 flex items-center gap-5 backdrop-blur-sm shadow-xl">
+                        <div className="bg-red-500/5 border border-red-500/30 rounded-2xl p-4 md:p-6 flex flex-col items-center gap-3 backdrop-blur-sm shadow-xl text-center">
                             <div className="bg-red-500/20 p-3 rounded-full animate-pulse border border-red-500/20">
                                 <span className="text-2xl md:text-3xl">⚠️</span>
                             </div>
-                            <div className="text-left">
+                            <div>
                                 <p className="text-red-400 font-cyber font-bold text-sm md:text-base leading-tight uppercase tracking-wider">
                                     En caso de peligro inmediato: LLAMA AL 911
                                 </p>
                                 <p className="text-[#94a3b8] text-[9px] md:text-[10px] font-medium uppercase tracking-[0.1em] mt-1.5 leading-relaxed">
-                                    Este servidor no es un sistema de respuesta de emergencia directa.
+                                    Esta plataforma no es un sistema de respuesta de emergencia directa.
                                 </p>
                             </div>
                         </div>
@@ -139,26 +139,22 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                             className="group bg-[#0f172a]/40 hover:bg-[#0f172a]/60 backdrop-blur-md border border-white/5 rounded-2xl py-6 px-8 cursor-pointer transition-all hover:border-[#d946ef]/30 active:scale-98 shadow-xl"
                         >
                             <div className="text-center">
-                                <div className="text-lg md:text-xl font-cyber font-bold text-white mb-2 uppercase tracking-widest">
+                                <div className="text-lg md:text-xl font-cyber font-bold text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2">
                                     Red TOR (Onion)
+                                    <div className="w-5 h-5 rounded-full border border-white/30 text-xs flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity" title="Más información sobre TOR">?</div>
                                 </div>
-                                <div className="text-xs md:text-sm font-medium text-[#94a3b8] leading-relaxed max-w-xs mx-auto">
-                                    Accede mediante nuestro enlace .onion para anonimato extremo de IP.
+                                <div className="text-xs md:text-sm font-medium text-[#94a3b8] leading-relaxed max-w-xs mx-auto mb-2">
+                                    Si quieres protección adicional por tu seguridad, accede a la página mediante nuestro enlace .onion.
                                 </div>
+                                <p className="text-[10px] text-[#7c3aed] font-bold uppercase tracking-tighter opacity-80">
+                                    (Requiere descargar Tor Browser para acceder)
+                                </p>
                             </div>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Admin Button - Bottom Right (Discrete) */}
-            <button
-                onClick={() => navigate('/admin')}
-                className="fixed bottom-4 right-4 text-[#94a3b8] hover:text-[#7c3aed] text-xs font-medium transition-colors"
-                aria-label="Acceso administrativo"
-            >
-                Admin.
-            </button>
 
             {/* TOR Modal */}
             {showTorModal && (
