@@ -65,7 +65,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
             </div>
             {/* Top Right Buttons */}
-            <div className="fixed top-4 right-4 z-[9999] flex gap-3">
+            <div className="fixed top-6 right-6 md:right-10 z-[9999] flex gap-3">
                 {/* Ver Mapa de Reportes Button */}
                 <button
                     onClick={handleProceedToDashboard}
@@ -92,12 +92,12 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                 <div className="w-full max-w-md text-center">
                     {/* Logo/Icon */}
                     <div className="mb-8 flex justify-center transform hover:scale-105 transition-transform duration-500">
-                        <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-[0_0_20px_rgba(124,58,237,0.4)]" />
+                        <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-[0_0_20px_rgba(124,58,237,0.4)]" />
                     </div>
 
                     {/* Welcome Message */}
-                    <h1 className="text-3xl md:text-5xl font-cyber font-black bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mb-12 tracking-[0.2em] uppercase">
-                        Bienvenidos
+                    <h1 className="text-3xl md:text-5xl font-cyber font-black bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mb-12 tracking-[0.1em] md:tracking-[0.2em] uppercase">
+                        Bienvenido
                     </h1>
 
                     {/* Action Buttons */}
