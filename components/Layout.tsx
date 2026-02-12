@@ -34,10 +34,10 @@ export function Layout({ onReset }: { onReset: () => void }) {
                     >
                         <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-[0_0_10px_rgba(217,70,239,0.3)]" />
                         <div>
-                            <h1 className="text-sm md:text-lg font-cyber font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] tracking-wider leading-none">
+                            <h1 className="text-sm md:text-lg font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] tracking-wide leading-none">
                                 DenunzIA
                             </h1>
-                            <p className="text-[8px] md:text-[9px] text-[#94a3b8] font-cyber uppercase tracking-[0.2em] hidden xs:block mt-0.5">
+                            <p className="text-[8px] md:text-[9px] text-[#94a3b8] font-heading uppercase tracking-widest hidden xs:block mt-0.5">
                                 Reporte Seguro
                             </p>
                         </div>
@@ -50,7 +50,7 @@ export function Layout({ onReset }: { onReset: () => void }) {
                                 }`}
                         >
                             <LayoutDashboard size={18} className="md:w-5 md:h-5 mb-0.5 md:mb-1" />
-                            <span className="text-[9px] md:text-[10px] font-cyber font-bold uppercase tracking-wide">PANEL</span>
+                            <span className="text-[9px] md:text-[10px] font-heading font-bold uppercase tracking-wide">PANEL</span>
                         </Link>
 
                         <Link
@@ -59,7 +59,7 @@ export function Layout({ onReset }: { onReset: () => void }) {
                                 }`}
                         >
                             <ShieldAlert size={18} className="md:w-5 md:h-5 mb-0.5 md:mb-1" />
-                            <span className="text-[9px] md:text-[10px] font-cyber font-bold uppercase tracking-wide">DENUNCIAR</span>
+                            <span className="text-[9px] md:text-[10px] font-heading font-bold uppercase tracking-wide">DENUNCIAR</span>
                         </Link>
 
                         <Link
@@ -68,7 +68,7 @@ export function Layout({ onReset }: { onReset: () => void }) {
                                 }`}
                         >
                             <Info size={18} className="md:w-5 md:h-5 mb-0.5 md:mb-1" />
-                            <span className="text-[9px] md:text-[10px] font-cyber font-bold uppercase tracking-wide">INFO</span>
+                            <span className="text-[9px] md:text-[10px] font-heading font-bold uppercase tracking-wide">INFO</span>
                         </Link>
 
                         <Link
@@ -77,7 +77,7 @@ export function Layout({ onReset }: { onReset: () => void }) {
                                 }`}
                         >
                             <Terminal size={18} className="md:w-5 md:h-5 mb-0.5 md:mb-1" />
-                            <span className="text-[9px] md:text-[10px] font-cyber font-bold uppercase tracking-wide">ADMIN</span>
+                            <span className="text-[9px] md:text-[10px] font-heading font-bold uppercase tracking-wide">ADMIN</span>
                         </Link>
                     </div>
                 </div>

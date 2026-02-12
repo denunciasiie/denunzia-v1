@@ -182,10 +182,10 @@ export const AdminPanel: React.FC = () => {
     <div className="p-8 h-full flex flex-col bg-transparent text-[#e6edf3]">
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h2 className="text-3xl font-cyber font-bold flex items-center gap-4 text-[#d946ef] tracking-[0.1em]">
+          <h2 className="text-3xl font-heading font-bold flex items-center gap-4 text-[#d946ef] tracking-wider">
             <Terminal size={32} /> TERMINAL DE INTELIGENCIA
           </h2>
-          <p className="text-[10px] font-cyber text-[#94a3b8] uppercase tracking-[0.3em] mt-2 opacity-60">Base de Datos de Denuncias Securitizadas</p>
+          <p className="text-[10px] font-heading text-[#94a3b8] uppercase tracking-widest mt-2 opacity-60">Base de Datos de Denuncias Securitizadas</p>
         </div>
         <div className="flex gap-4">
           <div className="glass-effect px-5 py-3 rounded-xl border border-white/10 flex items-center gap-3">
@@ -275,23 +275,23 @@ export const AdminPanel: React.FC = () => {
                 <div className="p-8 border-b border-white/5 bg-black/20 flex justify-between items-center">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="text-[10px] font-cyber text-[#00f2ff] uppercase tracking-[0.2em]">{selectedReport.category}</span>
+                      <span className="text-[10px] font-heading text-[#00f2ff] uppercase tracking-wider">{selectedReport.category}</span>
                       <span className="text-[#8b949e]">/</span>
-                      <span className="text-[10px] font-cyber text-white uppercase tracking-[0.2em]">
+                      <span className="text-[10px] font-heading text-white uppercase tracking-wider">
                         {selectedReport.type}
                         {selectedReport.customCrimeType && (
                           <span className="text-[#d946ef] ml-2">({selectedReport.customCrimeType})</span>
                         )}
                       </span>
                     </div>
-                    <h3 className="text-2xl font-cyber font-bold text-white tracking-widest">EXPEDIENTE ANALÍTICO</h3>
+                    <h3 className="text-2xl font-heading font-bold text-white tracking-wider">EXPEDIENTE ANALÍTICO</h3>
                   </div>
                   <div className="flex gap-3">
                     {selectedReport.status !== 'published' && (
                       <button
                         onClick={() => handleUpdateStatus(selectedReport.id, 'published')}
                         disabled={loading}
-                        className="text-[9px] font-cyber bg-green-500/10 border border-green-500/30 hover:bg-green-500 hover:text-white text-green-500 px-6 py-3 rounded-xl transition-all uppercase tracking-widest flex items-center gap-2"
+                        className="text-[9px] font-heading bg-green-500/10 border border-green-500/30 hover:bg-green-500 hover:text-white text-green-500 px-6 py-3 rounded-xl transition-all uppercase tracking-widest flex items-center gap-2"
                       >
                         <CheckCircle size={14} /> PUBLICAR EN MAPA
                       </button>
@@ -300,14 +300,14 @@ export const AdminPanel: React.FC = () => {
                       <button
                         onClick={() => handleUpdateStatus(selectedReport.id, 'rejected')}
                         disabled={loading}
-                        className="text-[9px] font-cyber bg-red-500/10 border border-red-500/30 hover:bg-red-500 hover:text-white text-red-500 px-6 py-3 rounded-xl transition-all uppercase tracking-widest flex items-center gap-2"
+                        className="text-[9px] font-heading bg-red-500/10 border border-red-500/30 hover:bg-red-500 hover:text-white text-red-500 px-6 py-3 rounded-xl transition-all uppercase tracking-widest flex items-center gap-2"
                       >
                         <XCircle size={14} /> RECHAZAR / FALSA
                       </button>
                     )}
                     <button
                       onClick={() => toggleTrust(selectedReport.id, selectedReport.trustScore || 0)}
-                      className="text-[9px] font-cyber bg-white/5 border border-white/10 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/20 text-[#8b5cf6] px-6 py-3 rounded-xl transition-all uppercase tracking-widest"
+                      className="text-[9px] font-heading bg-white/5 border border-white/10 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/20 text-[#8b5cf6] px-6 py-3 rounded-xl transition-all uppercase tracking-widest"
                     >
                       Re-Calibrar
                     </button>
@@ -317,21 +317,21 @@ export const AdminPanel: React.FC = () => {
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-black/40 p-5 rounded-2xl border border-white/5">
-                      <span className="text-[#8b949e] block text-[9px] font-cyber uppercase tracking-widest mb-2">Rol del Reportante</span>
+                      <span className="text-[#8b949e] block text-[9px] font-heading uppercase tracking-widest mb-2">Rol del Reportante</span>
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-[#d946ef]/10 rounded-lg text-[#d946ef]">
                           <Activity size={16} />
                         </div>
-                        <span className="font-cyber text-sm text-white uppercase">{selectedReport.role}</span>
+                        <span className="font-heading text-sm text-white uppercase">{selectedReport.role}</span>
                       </div>
                     </div>
                     <div className="bg-black/40 p-5 rounded-2xl border border-white/5">
-                      <span className="text-[#8b949e] block text-[9px] font-cyber uppercase tracking-widest mb-2">Vector de Ubicación</span>
+                      <span className="text-[#8b949e] block text-[9px] font-heading uppercase tracking-widest mb-2">Vector de Ubicación</span>
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-[#7c4dff]/10 rounded-lg text-[#7c4dff]">
                           <MapPin size={16} />
                         </div>
-                        <span className="font-cyber text-sm text-white truncate uppercase">
+                        <span className="font-heading text-sm text-white truncate uppercase">
                           {selectedReport.location.details?.colony || 'ZONA NO IDENTIFICADA'}
                         </span>
                       </div>
@@ -349,7 +349,7 @@ export const AdminPanel: React.FC = () => {
                         <Lock size={32} className="text-[#ff4d4d]" />
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-[#d946ef] font-cyber text-xs mb-6 border-b border-white/5 pb-4">
+                    <div className="flex items-center gap-3 text-[#d946ef] font-heading text-xs mb-6 border-b border-white/5 pb-4">
                       <Terminal size={16} />
                       {decrypting ? (
                         <span>PROCESANDO NARRATIVA...</span>
@@ -385,20 +385,20 @@ export const AdminPanel: React.FC = () => {
                       <div className="absolute top-0 right-0 p-6 opacity-10">
                         <Zap size={32} className="text-[#8b5cf6]" />
                       </div>
-                      <div className="text-[10px] text-[#8b5cf6] font-cyber font-bold mb-6 uppercase tracking-[0.2em] flex items-center gap-3">
+                      <div className="text-[10px] text-[#8b5cf6] font-heading font-bold mb-6 uppercase tracking-wider flex items-center gap-3">
                         <Cpu size={14} /> ANÁLISIS DE INTELIGENCIA GEMINI 2.5
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div className="bg-black/40 p-4 rounded-xl border border-white/5 text-center">
-                          <span className="block text-[8px] text-[#8b949e] mb-1 font-cyber">SPAM PROBABILITY</span>
-                          <span className="text-lg font-cyber text-[#ff4d4d]">
+                          <span className="block text-[8px] text-[#8b949e] mb-1 font-heading">SPAM PROBABILITY</span>
+                          <span className="text-lg font-heading text-[#ff4d4d]">
                             {Math.round((JSON.parse(selectedReport.aiAnalysis as string).spamProbability || 0) * 100)}%
                           </span>
                         </div>
                         <div className="bg-black/40 p-4 rounded-xl border border-white/5 text-center">
-                          <span className="block text-[8px] text-[#8b949e] mb-1 font-cyber">ENTITY COUNT</span>
-                          <span className="text-lg font-cyber text-[#00f2ff]">
+                          <span className="block text-[8px] text-[#8b949e] mb-1 font-heading">ENTITY COUNT</span>
+                          <span className="text-lg font-heading text-[#00f2ff]">
                             {JSON.parse(selectedReport.aiAnalysis as string).extractedEntities?.length || 0}
                           </span>
                         </div>

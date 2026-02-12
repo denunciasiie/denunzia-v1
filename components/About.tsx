@@ -7,7 +7,7 @@ export function About() {
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl md:text-5xl font-bold text-[#1e293b] mb-4">
+                    <h1 className="text-3xl md:text-5xl font-bold text-[#1e293b] mb-4 font-heading">
                         Sistema DenunZIA
                     </h1>
                     <p className="text-lg text-[#64748b] max-w-2xl mx-auto">
@@ -39,7 +39,7 @@ export function About() {
                                 <Shield size={24} className="text-[#7c3aed]" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1e293b] mb-2">
+                                <h3 className="text-lg font-bold text-[#1e293b] mb-2 font-heading">
                                     Infraestructura TOR
                                 </h3>
                                 <p className="text-sm text-[#64748b] leading-relaxed">
@@ -56,7 +56,7 @@ export function About() {
                                 <Lock size={24} className="text-[#6366f1]" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1e293b] mb-2">
+                                <h3 className="text-lg font-bold text-[#1e293b] mb-2 font-heading">
                                     Cifrado E2EE
                                 </h3>
                                 <p className="text-sm text-[#64748b] leading-relaxed">
@@ -73,7 +73,7 @@ export function About() {
                                 <MapPin size={24} className="text-[#10b981]" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1e293b] mb-2">
+                                <h3 className="text-lg font-bold text-[#1e293b] mb-2 font-heading">
                                     K-Anonimato
                                 </h3>
                                 <p className="text-sm text-[#64748b] leading-relaxed">
@@ -90,7 +90,7 @@ export function About() {
                                 <Sparkles size={24} className="text-[#d946ef]" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1e293b] mb-2">
+                                <h3 className="text-lg font-bold text-[#1e293b] mb-2 font-heading">
                                     Gemini AI 2.5
                                 </h3>
                                 <p className="text-sm text-[#64748b] leading-relaxed">
@@ -139,7 +139,7 @@ export function About() {
 
                 {/* Additional Features */}
                 <div className="bg-gradient-to-br from-[#7c3aed] to-[#6366f1] rounded-3xl p-8 md:p-12 text-white shadow-xl">
-                    <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center font-heading">
                         Características Adicionales
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -15,13 +15,13 @@ export const SecurityBanner: React.FC = () => {
               <ShieldCheck size={20} className="md:w-4 md:h-4 text-[#10b981]" />
               <div className="absolute inset-0 bg-[#10b981]/40 blur-sm rounded-full animate-pulse"></div>
             </div>
-            <span className="text-xs md:text-[10px] font-cyber font-black tracking-[0.15em] md:tracking-[0.2em] text-white">RED SEGURA ACTIVA</span>
+            <span className="text-xs md:text-[10px] font-heading font-black tracking-widest text-white">RED SEGURA ACTIVA</span>
           </div>
 
           <div className="hidden lg:flex items-center gap-4 md:gap-6 border-l border-white/10 pl-4 md:pl-8">
             <div className="flex items-center gap-2">
               <Eye size={14} className="md:w-3 md:h-3 text-[#10b981] opacity-70" />
-              <span className="text-[10px] md:text-[9px] font-cyber font-bold text-[#94a3b8] uppercase tracking-[0.1em]">DENUNCIA ANÓNIMA ACTIVA</span>
+              <span className="text-[10px] md:text-[9px] font-heading font-bold text-[#94a3b8] uppercase tracking-wider">DENUNCIA ANÓNIMA ACTIVA</span>
             </div>
           </div>
         </div>

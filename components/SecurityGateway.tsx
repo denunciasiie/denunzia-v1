@@ -69,7 +69,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                 {/* Ver Mapa de Reportes Button */}
                 <button
                     onClick={handleProceedToDashboard}
-                    className="bg-white/5 backdrop-blur-md text-[#3b82f6] border border-white/10 py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-cyber font-bold cursor-pointer shadow-xl hover:bg-white/10 transition-all active:scale-95 flex items-center gap-2"
+                    className="bg-white/5 backdrop-blur-md text-[#3b82f6] border border-white/10 py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-bold cursor-pointer shadow-xl hover:bg-white/10 transition-all active:scale-95 flex items-center gap-2"
                     aria-label="Ver mapa de reportes"
                 >
                     📊 <span className="hidden sm:inline">Ver Mapa de Reportes</span><span className="sm:hidden">Mapa</span>
@@ -78,7 +78,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                 {/* Panic/Exit Button */}
                 <button
                     onClick={handlePanic}
-                    className="bg-red-500 text-white border-none py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-cyber font-bold cursor-pointer shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95"
+                    className="bg-red-500 text-white border-none py-2 px-4 md:py-2.5 md:px-5 rounded-full text-xs md:text-sm font-bold cursor-pointer shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95"
                     aria-label="Botón de salida rápida"
                     title="Presiona ESC o haz clic para salir inmediatamente"
                 >
@@ -96,7 +96,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                     </div>
 
                     {/* Welcome Message */}
-                    <h1 className="text-3xl md:text-5xl font-cyber font-black bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mb-12 tracking-[0.1em] md:tracking-[0.2em] uppercase">
+                    <h1 className="text-3xl md:text-5xl font-heading font-black bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mb-12 tracking-normal uppercase">
                         Bienvenido
                     </h1>
 
@@ -108,8 +108,8 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                             className="group relative overflow-hidden bg-gradient-to-r from-[#d946ef] to-[#8b5cf6] border-none rounded-2xl py-6 px-8 cursor-pointer shadow-2xl shadow-[#d946ef]/20 transition-all hover:scale-[1.02] active:scale-98"
                         >
                             <div className="relative z-10 text-center">
-                                <div className="text-xl md:text-2xl font-cyber font-black text-white mb-2 uppercase tracking-widest">
-                                    Haz tu Denuncia
+                                <div className="text-xl md:text-2xl font-heading font-black text-white mb-2 uppercase tracking-wide">
+                                    Haz Tu Denuncia Aquí
                                 </div>
                                 <div className="text-xs md:text-sm font-medium text-white/90 leading-relaxed max-w-xs mx-auto">
                                     Tu reporte es 100% anónimo con cifrado de grado militar de extremo a extremo.
@@ -124,7 +124,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                                 <span className="text-2xl md:text-3xl">⚠️</span>
                             </div>
                             <div>
-                                <p className="text-red-400 font-cyber font-bold text-sm md:text-base leading-tight uppercase tracking-wider">
+                                <p className="text-red-400 font-heading font-bold text-sm md:text-base leading-tight uppercase tracking-wide text-center">
                                     En caso de peligro inmediato: LLAMA AL 911
                                 </p>
                                 <p className="text-[#94a3b8] text-[9px] md:text-[10px] font-medium uppercase tracking-[0.1em] mt-1.5 leading-relaxed">
@@ -139,7 +139,7 @@ export const SecurityGateway: React.FC<SecurityGatewayProps> = ({ onProceed }) =
                             className="group bg-[#0f172a]/40 hover:bg-[#0f172a]/60 backdrop-blur-md border border-white/5 rounded-2xl py-6 px-8 cursor-pointer transition-all hover:border-[#d946ef]/30 active:scale-98 shadow-xl"
                         >
                             <div className="text-center">
-                                <div className="text-lg md:text-xl font-cyber font-bold text-white mb-2 uppercase tracking-widest flex items-center justify-center gap-2">
+                                <div className="text-lg md:text-xl font-heading font-bold text-white mb-2 uppercase tracking-wide flex items-center justify-center gap-2">
                                     Red TOR (Onion)
                                     <div className="w-5 h-5 rounded-full border border-white/30 text-xs flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity" title="Más información sobre TOR">?</div>
                                 </div>
