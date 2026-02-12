@@ -20,7 +20,7 @@ export const Dashboard: React.FC = () => {
     const fetchReports = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${apiUrl}/api/reports?limit=500`);
+        const response = await fetch(`${apiUrl}/api/reports?limit=500&status=published`);
         const data = await response.json();
         if (data.success) {
           setReports(data.reports);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getReportsFromDB, updateReportInDB, getDecryptedReportById, deleteAllReports } from '../services/storageService';
 import { ReportData } from '../types';
-import { Eye, ShieldAlert, CheckSquare, AlertCircle, Terminal, Cpu, Database, HardDrive, Lock, Unlock, Zap, Activity, MapPin, Trash2 } from 'lucide-react';
+import { Eye, ShieldAlert, CheckSquare, AlertCircle, Terminal, Cpu, Database, HardDrive, Lock, Unlock, Zap, Activity, MapPin, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 export const AdminPanel: React.FC = () => {
   const [reports, setReports] = useState<ReportData[]>([]);
@@ -70,6 +70,22 @@ export const AdminPanel: React.FC = () => {
     } catch (error) {
       console.error('Error during cleanup:', error);
       alert('Failed to cleanup reports');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    try {
+      setLoading(true);
+      await updateReportInDB(id, { status: newStatus } as any);
+      await loadReports();
+      if (selectedReport?.id === id) {
+        setSelectedReport({ ...selectedReport, status: newStatus });
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error al actualizar el estado');
     } finally {
       setLoading(false);
     }
@@ -179,6 +195,24 @@ export const AdminPanel: React.FC = () => {
               <span className="text-sm font-cyber text-white">{reports.length}</span>
             </div>
           </div>
+          {reports.some(r => r.status !== 'published') && (
+            <button
+              onClick={async () => {
+                if (confirm("¿Seguro que deseas publicar TODAS las denuncias pendientes?")) {
+                  setLoading(true);
+                  for (const r of reports.filter(r => r.status !== 'published')) {
+                    await updateReportInDB(r.id, { status: 'published' } as any);
+                  }
+                  await loadReports();
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="px-5 py-3 bg-[#10b981]/10 border border-[#10b981]/30 text-[#10b981] rounded-xl hover:bg-[#10b981] hover:text-white transition-all text-[10px] font-cyber uppercase tracking-widest"
+            >
+              Publicar Pendientes
+            </button>
+          )}
           <button
             onClick={() => setIsAuthenticated(false)}
             className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
@@ -213,7 +247,16 @@ export const AdminPanel: React.FC = () => {
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#d946ef] rounded-r-full"></div>
                   )}
                   <div className="flex justify-between items-start mb-3">
-                    <span className="font-mono text-[9px] text-[#8b949e]">PK-{r.id.substring(0, 8).toUpperCase()}</span>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-[9px] text-[#8b949e]">PK-{r.id.substring(0, 8).toUpperCase()}</span>
+                      <div className={`flex items-center gap-1 text-[8px] font-cyber uppercase tracking-tighter ${r.status === 'published' ? 'text-green-500' :
+                        r.status === 'rejected' ? 'text-red-500' : 'text-amber-500'
+                        }`}>
+                        {r.status === 'published' ? <CheckCircle size={8} /> :
+                          r.status === 'rejected' ? <XCircle size={8} /> : <Clock size={8} />}
+                        {r.status || 'pending'}
+                      </div>
+                    </div>
                     <div className={`px-3 py-1 rounded-full border text-[8px] font-cyber ${r.trustScore && r.trustScore > 0.7 ? 'bg-[#10b981]/10 border-[#10b981]/30 text-[#10b981]' : 'bg-[#ff4d4d]/10 border-[#ff4d4d]/30 text-[#ff4d4d]'}`}>
                       TRUST: {Math.round((r.trustScore || 0) * 100)}%
                     </div>
@@ -243,12 +286,32 @@ export const AdminPanel: React.FC = () => {
                     </div>
                     <h3 className="text-2xl font-cyber font-bold text-white tracking-widest">EXPEDIENTE ANALÍTICO</h3>
                   </div>
-                  <button
-                    onClick={() => toggleTrust(selectedReport.id, selectedReport.trustScore || 0)}
-                    className="text-[9px] font-cyber bg-white/5 border border-white/10 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/20 text-[#8b5cf6] px-6 py-3 rounded-xl transition-all uppercase tracking-widest"
-                  >
-                    Re-Calibrar Confianza
-                  </button>
+                  <div className="flex gap-3">
+                    {selectedReport.status !== 'published' && (
+                      <button
+                        onClick={() => handleUpdateStatus(selectedReport.id, 'published')}
+                        disabled={loading}
+                        className="text-[9px] font-cyber bg-green-500/10 border border-green-500/30 hover:bg-green-500 hover:text-white text-green-500 px-6 py-3 rounded-xl transition-all uppercase tracking-widest flex items-center gap-2"
+                      >
+                        <CheckCircle size={14} /> PUBLICAR EN MAPA
+                      </button>
+                    )}
+                    {selectedReport.status !== 'rejected' && (
+                      <button
+                        onClick={() => handleUpdateStatus(selectedReport.id, 'rejected')}
+                        disabled={loading}
+                        className="text-[9px] font-cyber bg-red-500/10 border border-red-500/30 hover:bg-red-500 hover:text-white text-red-500 px-6 py-3 rounded-xl transition-all uppercase tracking-widest flex items-center gap-2"
+                      >
+                        <XCircle size={14} /> RECHAZAR / FALSA
+                      </button>
+                    )}
+                    <button
+                      onClick={() => toggleTrust(selectedReport.id, selectedReport.trustScore || 0)}
+                      className="text-[9px] font-cyber bg-white/5 border border-white/10 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/20 text-[#8b5cf6] px-6 py-3 rounded-xl transition-all uppercase tracking-widest"
+                    >
+                      Re-Calibrar
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
