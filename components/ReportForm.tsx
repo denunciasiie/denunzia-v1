@@ -175,7 +175,8 @@ export const ReportForm: React.FC = () => {
     },
     accusedName: '',
     narrative: '',
-    files: [] as File[]
+    files: [] as File[],
+    website_url: '' // Honeypot field
   });
 
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
@@ -328,6 +329,18 @@ export const ReportForm: React.FC = () => {
     setLoading(true);
     setErrorMsg(null);
 
+    // reCAPTCHA v3 Token Generation
+    let reCaptchaToken = '';
+    const SITE_KEY = (window as any).RECAPTCHA_SITE_KEY || '6Ld_MOCK_SITE_KEY';
+
+    if ((window as any).grecaptcha) {
+      try {
+        reCaptchaToken = await (window as any).grecaptcha.execute(SITE_KEY, { action: 'submit_report' });
+      } catch (captchaErr) {
+        console.warn('reCAPTCHA execution failed:', captchaErr);
+      }
+    }
+
     try {
       // Generate report ID
       const id = Array.from(crypto.getRandomValues(new Uint8Array(8)))
@@ -384,7 +397,8 @@ export const ReportForm: React.FC = () => {
         timestamp: timestampCDMX,
         trustScore: trustScore.toString(),
         aiAnalysis: aiAnalysis || 'Sin análisis',
-        narrativa_real: formData.narrative
+        narrativa_real: formData.narrative,
+        website_url: formData.website_url // Honeypot
       };
 
       // Send to backend
@@ -398,6 +412,9 @@ export const ReportForm: React.FC = () => {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${apiUrl}/api/reports`, {
         method: 'POST',
+        headers: {
+          'x-recaptcha-token': reCaptchaToken
+        },
         body: payload
       });
 
@@ -786,6 +803,18 @@ export const ReportForm: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Honeypot Field - Invisible to humans */}
+          <div className="hidden" aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+            <input
+              type="text"
+              name="website_url"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.website_url}
+              onChange={e => setFormData({ ...formData, website_url: e.target.value })}
+            />
           </div>
 
           {/* CAPTCHA */}

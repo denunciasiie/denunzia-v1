@@ -11,6 +11,7 @@ import { specs } from './swaggerConfig.js';
 import multer from 'multer';
 import { uploadToPinata } from './services/pinataService.js';
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 dotenv.config();
 
@@ -91,15 +92,26 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Rate limiting
-const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-    message: 'Too many requests from this IP, please try again later.',
+// Standard limiter for most routes
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-app.use('/api/', limiter);
+// Stricter limiter for report submissions (2 per minute per IP)
+const reportLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 2,
+    message: 'Límite de denuncias excedido. Por favor espera un minuto antes de intentar de nuevo.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use('/api/', generalLimiter);
+app.use('/api/reports', reportLimiter);
 
 // Request logging
 app.use((req, res, next) => {
@@ -278,6 +290,28 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
     try {
         console.log('[API] POST /api/reports - Received request');
 
+        const reCaptchaToken = req.headers['x-recaptcha-token'];
+        const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
+
+        // Verify reCAPTCHA if secret is configured
+        if (RECAPTCHA_SECRET && reCaptchaToken) {
+            try {
+                const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${reCaptchaToken}`;
+                const verifyRes = await fetch(verifyUrl, { method: 'POST' });
+                const verifyData = await verifyRes.json();
+
+                if (!verifyData.success || verifyData.score < 0.5) {
+                    console.warn(`[SECURITY] reCAPTCHA failed. Score: ${verifyData.score}`);
+                    return res.status(403).json({ error: 'Security verification failed' });
+                }
+            } catch (captchaErr) {
+                console.error('reCAPTCHA verification error:', captchaErr);
+                // Continue if service is down, but log it
+            }
+        } else if (RECAPTCHA_SECRET && !reCaptchaToken) {
+            return res.status(403).json({ error: 'Security token missing' });
+        }
+
         let body = req.body;
 
         // Determine if request is multipart (files) or JSON
@@ -309,8 +343,15 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             timestamp,
             trustScore,
             aiAnalysis,
-            narrativa_real
+            narrativa_real,
+            website_url // Honeypot field
         } = body;
+
+        // Honeypot check: If bot fills this invisible field, silent reject
+        if (website_url) {
+            console.warn(`[SECURITY] Honeypot triggered for report ${id || 'unknown'}`);
+            return res.status(201).json({ success: true, message: 'Report submitted successfully' }); // Pretend success
+        }
 
         const files = req.files || [];
         console.log(`[API] Processing report ${id} with ${files.length} files`);
@@ -341,27 +382,36 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             trustScore ? parseFloat(trustScore) : null, aiAnalysis, 'pending'
         ]);
 
-        // 2. Process Files -> Pinata -> Evidence Table
+        // 2. Process Files -> EXIF Cleanup -> Pinata -> Evidence Table
         if (files.length > 0) {
-            console.log(`[API] Uploading ${files.length} files to Pinata...`);
+            console.log(`[API] Processing ${files.length} files...`);
 
             for (const file of files) {
                 try {
-                    // Upload to IPFS
-                    const cid = await uploadToPinata(file.buffer, file.originalname);
+                    let processedBuffer = file.buffer;
 
-                    // Encrypt the CID
+                    // 2a. EXIF Cleanup for Images
+                    if (file.mimetype.startsWith('image/')) {
+                        console.log(`[API] Stripping EXIF metatada from ${file.originalname}`);
+                        processedBuffer = await sharp(file.buffer)
+                            .rotate() // Keep orientation but strip metadata
+                            .toBuffer();
+                    }
+
+                    // 2b. Upload to IPFS
+                    const cid = await uploadToPinata(processedBuffer, file.originalname);
+
+                    // 2c. Encrypt the CID
                     const encryptedPath = encryptCID(cid);
 
-                    // Store in evidence_files
+                    // 2d. Store in evidence_files
                     await query(`
                         INSERT INTO evidence_files (report_id, file_name, file_type, file_size, encrypted_path)
                         VALUES ($1, $2, $3, $4, $5)
-                    `, [id, file.originalname, file.mimetype, file.size, encryptedPath]);
+                    `, [id, file.originalname, file.mimetype, processedBuffer.length, encryptedPath]);
 
                 } catch (uploadError) {
                     console.error(`Failed to process file ${file.originalname}:`, uploadError);
-                    // Continue with other files? Yes.
                 }
             }
         }
