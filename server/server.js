@@ -32,7 +32,7 @@ app.use(helmet({
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org"],
-            connectSrc: ["'self'", "http://localhost:*", "http://127.0.0.1:*", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
+            connectSrc: ["'self'", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://127.0.0.1:*", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
             fontSrc: ["'self'", "https:", "data:"],
             objectSrc: ["'none'"],
             mediaSrc: ["'none'"],
@@ -71,12 +71,16 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
+        // Allow requests with no origin (like mobile apps)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+
+        const isDev = process.env.NODE_ENV === 'development';
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1;
+
+        if (isDev || isAllowed) {
             callback(null, true);
         } else {
-            console.warn(`[CORS] Rejected origin: ${origin}`);
+            console.warn(`[CORS] Blocked origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -317,7 +321,7 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             body = req.body;
         }
 
-        const { powNonce } = req.headers;
+        const powNonce = req.headers['pow-nonce'];
 
         // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
         // Difficulty: 4 zeros (16 bits) - Hard for bots, easy for humans

@@ -16,9 +16,9 @@ export const analyzeReport = async (narrative: string, crimeType: string): Promi
   // We initialize here to prevent top-level crashes if process.env is accessed prematurely in some environments
   let apiKey = '';
   try {
-    apiKey = process.env.API_KEY || '';
+    apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
   } catch (e) {
-    console.warn("Cannot access process.env.API_KEY");
+    console.warn("Cannot access process.env.GEMINI_API_KEY");
   }
 
   if (!apiKey) {
@@ -60,8 +60,8 @@ export const analyzeReport = async (narrative: string, crimeType: string): Promi
           properties: {
             trustScore: { type: Type.NUMBER, description: "Puntuación de credibilidad de 0 a 1" },
             spamProbability: { type: Type.NUMBER, description: "Probabilidad de que sea spam o falso" },
-            extractedEntities: { 
-              type: Type.ARRAY, 
+            extractedEntities: {
+              type: Type.ARRAY,
               items: { type: Type.STRING },
               description: "Lista de personas u organizaciones mencionadas"
             },
@@ -74,7 +74,7 @@ export const analyzeReport = async (narrative: string, crimeType: string): Promi
 
     const jsonText = response.text;
     if (!jsonText) throw new Error("Empty response from Gemini");
-    
+
     return JSON.parse(jsonText) as AnalysisResult;
 
   } catch (error) {
