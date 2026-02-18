@@ -314,8 +314,10 @@ export const ReportForm: React.FC = () => {
     }
   };
 
-  // Handle Submit
-  const handleSubmit = async () => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('--- ENVIANDO DENUNCIA ---');
     if (!captchaValid) {
       setErrorMsg('Por favor completa el CAPTCHA');
       return;
@@ -329,13 +331,11 @@ export const ReportForm: React.FC = () => {
     setLoading(true);
     setErrorMsg(null);
 
-    // reCAPTCHA v3 Token Generation
-    let reCaptchaToken = '';
-    const SITE_KEY = (window as any).RECAPTCHA_SITE_KEY || '6Ld_MOCK_SITE_KEY';
     // Proof-of-Work (PoW) computation - 100% Anonymous
     let powNonce = 0;
     const difficulty = 4;
-    const reportId = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    // Use window.crypto for better browser compatibility
+    const reportId = Array.from(window.crypto.getRandomValues(new Uint8Array(8)))
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
@@ -344,7 +344,9 @@ export const ReportForm: React.FC = () => {
       let hash = '';
       const encoder = new TextEncoder();
 
-      // Keep incrementing nonce until we find a hash with enough leading zeros
+      // Safety limit for the loop (max 10 seconds of computation)
+      const startTime = Date.now();
+
       while (true) {
         const data = encoder.encode(reportId + powNonce);
         const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
@@ -353,7 +355,14 @@ export const ReportForm: React.FC = () => {
 
         if (hash.startsWith('0'.repeat(difficulty))) break;
         powNonce++;
+
+        // Timeout check every 1000 iterations
+        if (powNonce % 1000 === 0 && (Date.now() - startTime > 10000)) {
+          console.warn('PoW took too long, proceeding anyway with nonce:', powNonce);
+          break;
+        }
       }
+      console.log('PoW generated:', powNonce);
     } catch (powError) {
       console.error('PoW error:', powError);
     }
@@ -423,7 +432,7 @@ export const ReportForm: React.FC = () => {
         payload.append('files', file);
       });
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/reports`, {
         method: 'POST',
         headers: {
@@ -433,14 +442,24 @@ export const ReportForm: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al enviar la denuncia');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al enviar la denuncia');
       }
 
       setReportId(id);
       setSuccess(true);
-    } catch (error) {
+      window.scrollTo(0, 0);
+    } catch (error: any) {
       console.error('Submit error:', error);
-      setErrorMsg('Error al enviar la denuncia. Por favor intenta de nuevo.');
+      let msg = 'Error al enviar la denuncia. Por favor intenta de nuevo.';
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        msg = 'No se pudo conectar con el servidor. Verifica que el backend esté corriendo en el puerto 3001.';
+      } else if (error.message) {
+        msg = error.message;
+      }
+      setErrorMsg(msg);
+      // Scroll to error message at the top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -831,18 +850,6 @@ export const ReportForm: React.FC = () => {
             />
           </div>
 
-          {/* Honeypot Field - Invisible to humans */}
-          <div className="hidden" aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
-            <input
-              type="text"
-              name="website_url"
-              tabIndex={-1}
-              autoComplete="off"
-              value={formData.website_url}
-              onChange={e => setFormData({ ...formData, website_url: e.target.value })}
-            />
-          </div>
-
           {/* CAPTCHA */}
           <div className="bg-white rounded-3xl p-6 shadow-lg">
             <h2 className="text-lg font-bold text-[#7c3aed] mb-4">
@@ -852,13 +859,23 @@ export const ReportForm: React.FC = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl">
+          <div className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl z-[1000]">
+            {errorMsg && (
+              <p className="text-red-600 text-xs font-bold mb-2 text-center animate-bounce">
+                ⚠️ {errorMsg}
+              </p>
+            )}
             <button
               onClick={handleSubmit}
               disabled={loading || !captchaValid}
-              className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold hover:bg-[#6d28d9] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold hover:bg-[#6d28d9] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-95"
             >
-              {loading ? 'Enviando...' : 'ENVIAR DENUNCIA'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <RefreshCw size={18} className="animate-spin" />
+                  PROCESANDO...
+                </span>
+              ) : 'ENVIAR DENUNCIA'}
             </button>
           </div>
         </div>

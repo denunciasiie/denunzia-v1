@@ -65,23 +65,7 @@ const decryptWithAES = (encryptedData, aesKey, iv) => {
 
     const decipher = crypto.createDecipheriv('aes-256-gcm', aesKey, ivBuffer);
 
-    // GCM requires the Auth Tag. Wait, where is the auth tag?
-    // In current implementation (client side), we don't seem to be sending it separately?
-    // Let's check server.js/encryptionService.ts again.
-    // Actually, subtle crypto appends it to the ciphertext.
-
-    // For Node crypto, we need to extract tag from end of buffer if using GCM.
-    // But let's keep the existing logic if it was working? 
-    // Actually, the previous logic was:
-    // let decrypted = decipher.update(encryptedBuffer);
-    // decrypted = Buffer.concat([decrypted, decipher.final()]);
-    // That won't work for GCM without setAuthTag().
-
-    // However, I will stick to what was there or fix it if I see the client side code.
-    // In encryptionService.ts:
-    // const { ciphertext, iv } = await encryptWithAES(plaintext, aesKey);
     // SubtleCrypto AES-GCM appends 16 bytes of tag to the end.
-
     try {
         const tag = encryptedBuffer.slice(-16);
         const data = encryptedBuffer.slice(0, -16);
@@ -121,7 +105,7 @@ export const decryptData = (encryptedPayload) => {
 };
 
 export const validatePayloadSize = (payload) => {
-    const maxSize = parseInt(process.env.MAX_PAYLOAD_SIZE) || 2 * 1024 * 1024;
+    const maxSize = parseInt(process.env.MAX_PAYLOAD_SIZE) || 50 * 1024 * 1024;
     const payloadSize = Buffer.from(JSON.stringify(payload)).length;
     if (payloadSize > maxSize) {
         throw new Error(`Payload size exceeded`);
@@ -130,6 +114,7 @@ export const validatePayloadSize = (payload) => {
 };
 
 export const sanitizeDecryptedData = (data) => {
+    if (!data) return data;
     const sanitized = {};
     for (const [key, value] of Object.entries(data)) {
         if (typeof value === 'string') {

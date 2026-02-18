@@ -32,7 +32,7 @@ app.use(helmet({
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org"],
-            connectSrc: ["'self'", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
+            connectSrc: ["'self'", "http://localhost:*", "http://127.0.0.1:*", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
             fontSrc: ["'self'", "https:", "data:"],
             objectSrc: ["'none'"],
             mediaSrc: ["'none'"],
@@ -82,7 +82,7 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'pow-nonce'],
     preflightContinue: false,
     optionsSuccessStatus: 204
 }));
@@ -123,6 +123,17 @@ app.use((req, res, next) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // ==================== ROUTES ====================
+
+/**
+ * API Root - Welcome message
+ */
+app.get('/api', (req, res) => {
+    res.json({
+        message: 'SIIEC API - Sistema Integrado de Inteligencia Ética y Criminal',
+        status: 'active',
+        version: '1.0.0'
+    });
+});
 
 /**
  * Health check endpoint
@@ -290,18 +301,6 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
     try {
         console.log('[API] POST /api/reports - Received request');
 
-        const { powNonce } = req.headers;
-
-        // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
-        // Difficulty: 4 zeros (16 bits) - Hard for bots, easy for humans
-        const difficulty = 4;
-        const hash = crypto.createHash('sha256').update(req.body.id + powNonce).digest('hex');
-
-        if (!hash.startsWith('0'.repeat(difficulty))) {
-            console.warn(`[SECURITY] Invalid PoW from IP: ${req.ip}`);
-            return res.status(403).json({ error: 'Security verification failed (PoW)' });
-        }
-
         let body = req.body;
 
         // Determine if request is multipart (files) or JSON
@@ -316,6 +315,19 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
         } else {
             // Standard JSON request
             body = req.body;
+        }
+
+        const { powNonce } = req.headers;
+
+        // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
+        // Difficulty: 4 zeros (16 bits) - Hard for bots, easy for humans
+        const difficulty = 4;
+        const reportIdForPow = body.id || 'unknown';
+        const hash = crypto.createHash('sha256').update(reportIdForPow + powNonce).digest('hex');
+
+        if (!hash.startsWith('0'.repeat(difficulty))) {
+            console.warn(`[SECURITY] Invalid PoW from IP: ${req.ip} for report: ${reportIdForPow}`);
+            return res.status(403).json({ error: 'Security verification failed (PoW)' });
         }
 
         const {

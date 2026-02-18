@@ -75,6 +75,17 @@ BEGIN
     END;
 END $$;
 
+-- Ensure narrativa_real column exists
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'reports' AND column_name = 'narrativa_real'
+    ) THEN
+        ALTER TABLE reports ADD COLUMN narrativa_real TEXT;
+    END IF;
+END $$;
+
 
 -- Admin Users Table
 CREATE TABLE IF NOT EXISTS admin_users (
