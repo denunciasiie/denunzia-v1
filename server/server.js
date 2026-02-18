@@ -24,7 +24,12 @@ app.set('trust proxy', 1);
 
 // ==================== MIDDLEWARE ====================
 
-// Security headers
+// Request logging (Move to top for debugging)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.get('origin') || 'no-origin'}`);
+    next();
+});
+
 // Security headers (High Security Configuration)
 app.use(helmet({
     contentSecurityPolicy: {
@@ -33,7 +38,7 @@ app.use(helmet({
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org"],
-            connectSrc: ["'self'", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://127.0.0.1:*", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
+            connectSrc: ["'self'", "http://localhost:*", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org", "https://www.denunzia.org", "https://denunziasiie.github.io"],
             fontSrc: ["'self'", "https:", "data:"],
             objectSrc: ["'none'"],
             mediaSrc: ["'none'"],
@@ -52,43 +57,50 @@ app.use(helmet({
         includeSubDomains: true,
         preload: true
     },
-    ieNoOpen: true,
-    noSniff: true,
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    xssFilter: true
 }));
 
 // CORS configuration
-// CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:4173',
     'https://denunziasiie.github.io',
     'https://denunzia.org',
-    'https://denunzia-v1.onrender.com', // Added Render URL
-    'https://denunziasiie.vercel.app' // Potential Vercel deployment
+    'https://www.denunzia.org',
+    'https://denunzia-v1.onrender.com'
 ];
+
+// Add origins from environment variable if present
+if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(',').forEach(o => {
+        const trimmed = o.trim();
+        if (trimmed && !allowedOrigins.includes(trimmed)) {
+            allowedOrigins.push(trimmed);
+        }
+    });
+}
 
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps)
         if (!origin) return callback(null, true);
 
-        const isDev = process.env.NODE_ENV === 'development';
-        const isAllowed = allowedOrigins.indexOf(origin) !== -1;
+        // Allow all subdomains of denunzia.org and localhosts in dev
+        const isLocal = origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
+        const isDenunzia = origin.endsWith('denunzia.org') || origin.endsWith('github.io');
+        const isExplicitlyAllowed = allowedOrigins.indexOf(origin) !== -1;
 
-        if (isDev || isAllowed) {
+        if (isLocal || isDenunzia || isExplicitlyAllowed) {
             callback(null, true);
         } else {
-            console.warn(`[CORS] Blocked origin: ${origin}`);
+            console.warn(`[CORS] Rejected origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'pow-nonce'],
-    preflightContinue: false,
     optionsSuccessStatus: 204
 }));
 
