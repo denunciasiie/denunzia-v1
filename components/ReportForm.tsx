@@ -454,8 +454,8 @@ export const ReportForm: React.FC = () => {
     } catch (error: any) {
       console.error('Submit error:', error);
       let msg = 'Error al enviar la denuncia. Por favor intenta de nuevo.';
-      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-        msg = 'No se pudo conectar con el servidor. Verifica que el backend esté corriendo en el puerto 3001.';
+      if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('NetworkError'))) {
+        msg = `No se pudo conectar con el servidor en ${getApiUrl()}. Verifica que el backend esté activo.`;
       } else if (error.message) {
         msg = error.message;
       }
