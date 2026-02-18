@@ -6,43 +6,53 @@ services:
     image: postgres:15-alpine
     container_name: siiec_db
     environment:
-      POSTGRES_USER: siiec_user
-      POSTGRES_PASSWORD: denunzia_2026
-      POSTGRES_DB: siiec_db
+      POSTGRES_USER: ${DB_USER:-siiec_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-denunzia_2026}
+      POSTGRES_DB: ${DB_NAME:-siiec_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # No ports exposed to host for security - only accessible via internal network
+    expose:
+      - "5432"
     networks:
       - siiec_network
+    restart: always
 
   # Backend API Service
   backend:
     build: ./server
     container_name: siiec_backend
+    restart: always
     environment:
-      - PORT=3004
-      - DATABASE_URL=postgresql://siiec_user:denunzia_2026@db:5432/siiec_db
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=siiec_db
-      - DB_USER=siiec_user
-      - DB_PASSWORD=denunzia_2026
+      - PORT=3001
       - NODE_ENV=production
-      - JWT_SECRET=${JWT_SECRET:-default_secret_for_audit}
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-siiec_db}
+      - DB_USER=${DB_USER:-siiec_user}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_SECRET=${ENCRYPTION_SECRET}
+      - PRIVATE_KEY_PEM=${PRIVATE_KEY_PEM}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://denunzia.org,https://denunziasiie.github.io,http://localhost:5173}
+      - PINATA_JWT=${PINATA_JWT}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     ports:
-      - "3004:3004"
+      - "3001:3001"
     depends_on:
       - db
     networks:
       - siiec_network
 
-  # Frontend Service
+  # Frontend Service (Nginx)
   frontend:
     build: .
     container_name: siiec_frontend
+    restart: always
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
     networks:

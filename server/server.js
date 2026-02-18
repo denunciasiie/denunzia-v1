@@ -10,7 +10,9 @@ import swaggerUi from 'swagger-ui-express';
 import { specs } from './swaggerConfig.js';
 import multer from 'multer';
 import { uploadToPinata } from './services/pinataService.js';
+import { analyzeNarrative } from './services/geminiService.js';
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 dotenv.config();
 
@@ -31,7 +33,7 @@ app.use(helmet({
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org"],
-            connectSrc: ["'self'", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
+            connectSrc: ["'self'", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://127.0.0.1:*", "https://denunzia-v1.onrender.com", "https://nominatim.openstreetmap.org", "https://denunzia.org"],
             fontSrc: ["'self'", "https:", "data:"],
             objectSrc: ["'none'"],
             mediaSrc: ["'none'"],
@@ -70,18 +72,22 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
+        // Allow requests with no origin (like mobile apps)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+
+        const isDev = process.env.NODE_ENV === 'development';
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1;
+
+        if (isDev || isAllowed) {
             callback(null, true);
         } else {
-            console.warn(`[CORS] Rejected origin: ${origin}`);
+            console.warn(`[CORS] Blocked origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'pow-nonce'],
     preflightContinue: false,
     optionsSuccessStatus: 204
 }));
@@ -91,15 +97,26 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Rate limiting
-const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-    message: 'Too many requests from this IP, please try again later.',
+// Standard limiter for most routes
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-app.use('/api/', limiter);
+// Stricter limiter for report submissions (2 per minute per IP)
+const reportLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 2,
+    message: 'Límite de denuncias excedido. Por favor espera un minuto antes de intentar de nuevo.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use('/api/', generalLimiter);
+app.use('/api/reports', reportLimiter);
 
 // Request logging
 app.use((req, res, next) => {
@@ -111,6 +128,17 @@ app.use((req, res, next) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // ==================== ROUTES ====================
+
+/**
+ * API Root - Welcome message
+ */
+app.get('/api', (req, res) => {
+    res.json({
+        message: 'SIIEC API - Sistema Integrado de Inteligencia Ética y Criminal',
+        status: 'active',
+        version: '1.0.0'
+    });
+});
 
 /**
  * Health check endpoint
@@ -294,6 +322,19 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             body = req.body;
         }
 
+        const powNonce = req.headers['pow-nonce'];
+
+        // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
+        // Difficulty: 4 zeros (16 bits) - Hard for bots, easy for humans
+        const difficulty = 4;
+        const reportIdForPow = body.id || 'unknown';
+        const hash = crypto.createHash('sha256').update(reportIdForPow + powNonce).digest('hex');
+
+        if (!hash.startsWith('0'.repeat(difficulty))) {
+            console.warn(`[SECURITY] Invalid PoW from IP: ${req.ip} for report: ${reportIdForPow}`);
+            return res.status(403).json({ error: 'Security verification failed (PoW)' });
+        }
+
         const {
             id,
             isAnonymous,
@@ -307,10 +348,39 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             algorithm,
             location,
             timestamp,
-            trustScore,
-            aiAnalysis,
-            narrativa_real
+            trustScore: clientTrustScore,
+            aiAnalysis: clientAiAnalysis,
+            narrativa_real,
+            website_url // Honeypot field
         } = body;
+
+        // --- NEW: SERVER-SIDE AI ANALYSIS (Security Hardened) ---
+        let trustScore = parseFloat(clientTrustScore || 0.85);
+        let aiAnalysis = clientAiAnalysis || 'Sin análisis';
+
+        if (narrativa_real && narrativa_real.trim().length > 10) {
+            console.log(`[AI] Analyzing narrative for report ${id}...`);
+            try {
+                const aiResult = await analyzeNarrative(narrativa_real, category);
+
+                // Override with server-side AI findings
+                trustScore = aiResult.trustScore;
+                aiAnalysis = aiResult.aiAnalysis;
+
+                // Optional: If AI detects high confidence spam, we could flag it here
+                if (aiResult.isSpam) {
+                    console.warn(`[SECURITY] AI identified potential spam: ${id}`);
+                }
+            } catch (aiError) {
+                console.error('[AI] Analysis failed, falling back to client/defaults:', aiError.message);
+            }
+        }
+
+        // Honeypot check: If bot fills this invisible field, silent reject
+        if (website_url) {
+            console.warn(`[SECURITY] Honeypot triggered for report ${id || 'unknown'}`);
+            return res.status(201).json({ success: true, message: 'Report submitted successfully' }); // Pretend success
+        }
 
         const files = req.files || [];
         console.log(`[API] Processing report ${id} with ${files.length} files`);
@@ -341,27 +411,36 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             trustScore ? parseFloat(trustScore) : null, aiAnalysis, 'pending'
         ]);
 
-        // 2. Process Files -> Pinata -> Evidence Table
+        // 2. Process Files -> EXIF Cleanup -> Pinata -> Evidence Table
         if (files.length > 0) {
-            console.log(`[API] Uploading ${files.length} files to Pinata...`);
+            console.log(`[API] Processing ${files.length} files...`);
 
             for (const file of files) {
                 try {
-                    // Upload to IPFS
-                    const cid = await uploadToPinata(file.buffer, file.originalname);
+                    let processedBuffer = file.buffer;
 
-                    // Encrypt the CID
+                    // 2a. EXIF Cleanup for Images
+                    if (file.mimetype.startsWith('image/')) {
+                        console.log(`[API] Stripping EXIF metatada from ${file.originalname}`);
+                        processedBuffer = await sharp(file.buffer)
+                            .rotate() // Keep orientation but strip metadata
+                            .toBuffer();
+                    }
+
+                    // 2b. Upload to IPFS
+                    const cid = await uploadToPinata(processedBuffer, file.originalname);
+
+                    // 2c. Encrypt the CID
                     const encryptedPath = encryptCID(cid);
 
-                    // Store in evidence_files
+                    // 2d. Store in evidence_files
                     await query(`
                         INSERT INTO evidence_files (report_id, file_name, file_type, file_size, encrypted_path)
                         VALUES ($1, $2, $3, $4, $5)
-                    `, [id, file.originalname, file.mimetype, file.size, encryptedPath]);
+                    `, [id, file.originalname, file.mimetype, processedBuffer.length, encryptedPath]);
 
                 } catch (uploadError) {
                     console.error(`Failed to process file ${file.originalname}:`, uploadError);
-                    // Continue with other files? Yes.
                 }
             }
         }

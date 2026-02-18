@@ -175,7 +175,8 @@ export const ReportForm: React.FC = () => {
     },
     accusedName: '',
     narrative: '',
-    files: [] as File[]
+    files: [] as File[],
+    website_url: '' // Honeypot field
   });
 
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
@@ -183,8 +184,10 @@ export const ReportForm: React.FC = () => {
   // Smart API URL detection
   const getApiUrl = () => {
     if (typeof window !== 'undefined') {
-      if (window.location.hostname === 'denunzia.org' || window.location.hostname.includes('github.io')) {
-        return 'https://denunzia-v1.onrender.com';
+      const host = window.location.hostname;
+      // Add your production domain(s) here
+      if (host === 'denunzia.org' || host.includes('github.io') || host === 'www.denunzia.org') {
+        return 'https://denunzia-v1.onrender.com'; // Change to your actual production API URL if different
       }
     }
     return import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -313,8 +316,10 @@ export const ReportForm: React.FC = () => {
     }
   };
 
-  // Handle Submit
-  const handleSubmit = async () => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('--- ENVIANDO DENUNCIA ---');
     if (!captchaValid) {
       setErrorMsg('Por favor completa el CAPTCHA');
       return;
@@ -328,11 +333,44 @@ export const ReportForm: React.FC = () => {
     setLoading(true);
     setErrorMsg(null);
 
+    // Proof-of-Work (PoW) computation - 100% Anonymous
+    let powNonce = 0;
+    const difficulty = 4;
+    // Use window.crypto for better browser compatibility
+    const reportId = Array.from(window.crypto.getRandomValues(new Uint8Array(8)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
     try {
-      // Generate report ID
-      const id = Array.from(crypto.getRandomValues(new Uint8Array(8)))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+      console.log('Generating security proof (PoW)...');
+      let hash = '';
+      const encoder = new TextEncoder();
+
+      // Safety limit for the loop (max 10 seconds of computation)
+      const startTime = Date.now();
+
+      while (true) {
+        const data = encoder.encode(reportId + powNonce);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        if (hash.startsWith('0'.repeat(difficulty))) break;
+        powNonce++;
+
+        // Timeout check every 1000 iterations
+        if (powNonce % 1000 === 0 && (Date.now() - startTime > 10000)) {
+          console.warn('PoW took too long, proceeding anyway with nonce:', powNonce);
+          break;
+        }
+      }
+      console.log('PoW generated:', powNonce);
+    } catch (powError) {
+      console.error('PoW error:', powError);
+    }
+
+    try {
+      const id = reportId;
 
       // Prepare data for encryption
       const reportData = {
@@ -384,32 +422,46 @@ export const ReportForm: React.FC = () => {
         timestamp: timestampCDMX,
         trustScore: trustScore.toString(),
         aiAnalysis: aiAnalysis || 'Sin análisis',
-        narrativa_real: formData.narrative
+        narrativa_real: formData.narrative,
+        website_url: formData.website_url // Honeypot
       };
 
       // Send to backend
       const payload = new FormData();
-      payload.append('payload', JSON.stringify(fullPayload)); // Enviar todo como un solo JSON string
+      payload.append('payload', JSON.stringify(fullPayload));
 
       formData.files.forEach(file => {
         payload.append('files', file);
       });
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/reports`, {
         method: 'POST',
+        headers: {
+          'pow-nonce': powNonce.toString()
+        },
         body: payload
       });
 
       if (!response.ok) {
-        throw new Error('Error al enviar la denuncia');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al enviar la denuncia');
       }
 
       setReportId(id);
       setSuccess(true);
-    } catch (error) {
+      window.scrollTo(0, 0);
+    } catch (error: any) {
       console.error('Submit error:', error);
-      setErrorMsg('Error al enviar la denuncia. Por favor intenta de nuevo.');
+      let msg = 'Error al enviar la denuncia. Por favor intenta de nuevo.';
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        msg = 'No se pudo conectar con el servidor. Verifica que el backend esté corriendo en el puerto 3001.';
+      } else if (error.message) {
+        msg = error.message;
+      }
+      setErrorMsg(msg);
+      // Scroll to error message at the top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -788,6 +840,18 @@ export const ReportForm: React.FC = () => {
             )}
           </div>
 
+          {/* Honeypot Field - Invisible to humans */}
+          <div className="hidden" aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+            <input
+              type="text"
+              name="website_url"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.website_url}
+              onChange={e => setFormData({ ...formData, website_url: e.target.value })}
+            />
+          </div>
+
           {/* CAPTCHA */}
           <div className="bg-white rounded-3xl p-6 shadow-lg">
             <h2 className="text-lg font-bold text-[#7c3aed] mb-4">
@@ -797,13 +861,23 @@ export const ReportForm: React.FC = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl">
+          <div className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-2xl z-[1000]">
+            {errorMsg && (
+              <p className="text-red-600 text-xs font-bold mb-2 text-center animate-bounce">
+                ⚠️ {errorMsg}
+              </p>
+            )}
             <button
               onClick={handleSubmit}
               disabled={loading || !captchaValid}
-              className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold hover:bg-[#6d28d9] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#7c3aed] text-white py-4 px-6 rounded-full font-bold hover:bg-[#6d28d9] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-95"
             >
-              {loading ? 'Enviando...' : 'ENVIAR DENUNCIA'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <RefreshCw size={18} className="animate-spin" />
+                  PROCESANDO...
+                </span>
+              ) : 'ENVIAR DENUNCIA'}
             </button>
           </div>
         </div>

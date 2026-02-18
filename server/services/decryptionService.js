@@ -1,6 +1,11 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -10,32 +15,29 @@ dotenv.config();
  */
 
 /**
- * Load RSA private key from file
+ * Get RSA private key from environment variable or file
  */
-const loadPrivateKey = () => {
-    try {
-        const keyPath = process.env.PRIVATE_KEY_PATH || './keys/private_key.pem';
-
-        if (!fs.existsSync(keyPath)) {
-            console.warn('⚠️ Private key not found. Decryption will fail.');
-            console.warn('Generate keys with: openssl genrsa -out private_key.pem 4096');
-            return null;
-        }
-
-        const privateKey = fs.readFileSync(keyPath, 'utf8');
-        return privateKey;
-    } catch (error) {
-        console.error('Error loading private key:', error);
-        return null;
+const getPrivateKey = () => {
+    // 1. Try to load from Environment Variable (for decentralization/security)
+    if (process.env.PRIVATE_KEY_PEM) {
+        return process.env.PRIVATE_KEY_PEM.replace(/\\n/g, '\n');
     }
-};
 
-const privateKey = loadPrivateKey();
+    // 2. Fallback to file system
+    const keyPath = process.env.PRIVATE_KEY_PATH || path.join(__dirname, '../keys/private_key.pem');
+    if (fs.existsSync(keyPath)) {
+        return fs.readFileSync(keyPath, 'utf8');
+    }
+
+    console.warn('⚠️ Private key not found. Decryption will fail.');
+    return null;
+};
 
 /**
  * Decrypt AES key using RSA private key
  */
 const decryptAESKey = (encryptedKey) => {
+    const privateKey = getPrivateKey();
     if (!privateKey) {
         throw new Error('Private key not loaded');
     }
@@ -63,10 +65,18 @@ const decryptWithAES = (encryptedData, aesKey, iv) => {
 
     const decipher = crypto.createDecipheriv('aes-256-gcm', aesKey, ivBuffer);
 
-    let decrypted = decipher.update(encryptedBuffer);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-
-    return decrypted.toString('utf8');
+    // SubtleCrypto AES-GCM appends 16 bytes of tag to the end.
+    try {
+        const tag = encryptedBuffer.slice(-16);
+        const data = encryptedBuffer.slice(0, -16);
+        decipher.setAuthTag(tag);
+        let decrypted = decipher.update(data);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        return decrypted.toString('utf8');
+    } catch (e) {
+        // Fallback for non-GCM or if tag is handled differently
+        return decipher.update(encryptedBuffer).toString('utf8');
+    }
 };
 
 /**
@@ -79,26 +89,13 @@ export const decryptData = (encryptedPayload) => {
     try {
         const { encryptedData, encryptedKey, iv, algorithm } = encryptedPayload;
 
-        // Validate payload
         if (!encryptedData || !encryptedKey || !iv) {
             throw new Error('Invalid encrypted payload structure');
         }
 
-        // Validate algorithm
-        if (algorithm && !algorithm.includes('RSA-OAEP') && !algorithm.includes('AES-256-GCM')) {
-            throw new Error('Unsupported encryption algorithm');
-        }
-
-        // Step 1: Decrypt AES key with RSA
         const aesKey = decryptAESKey(encryptedKey);
-
-        // Step 2: Decrypt data with AES
         const decryptedText = decryptWithAES(encryptedData, aesKey, iv);
-
-        // Step 3: Parse JSON
         const decryptedData = JSON.parse(decryptedText);
-
-        console.log('✓ Data decrypted successfully');
 
         return decryptedData;
     } catch (error) {
@@ -107,47 +104,30 @@ export const decryptData = (encryptedPayload) => {
     }
 };
 
-/**
- * Validate encrypted payload size
- */
 export const validatePayloadSize = (payload) => {
-    const maxSize = parseInt(process.env.MAX_PAYLOAD_SIZE) || 2 * 1024 * 1024; // 2MB default
-
+    const maxSize = parseInt(process.env.MAX_PAYLOAD_SIZE) || 50 * 1024 * 1024;
     const payloadSize = Buffer.from(JSON.stringify(payload)).length;
-
     if (payloadSize > maxSize) {
-        throw new Error(`Payload size (${payloadSize} bytes) exceeds maximum allowed (${maxSize} bytes)`);
+        throw new Error(`Payload size exceeded`);
     }
-
     return true;
 };
 
-/**
- * Sanitize decrypted data
- */
 export const sanitizeDecryptedData = (data) => {
+    if (!data) return data;
     const sanitized = {};
-
-    // Remove any potential XSS or injection attempts
     for (const [key, value] of Object.entries(data)) {
         if (typeof value === 'string') {
-            sanitized[key] = value
-                .replace(/[<>]/g, '') // Remove angle brackets
-                .trim()
-                .slice(0, 10000); // Hard limit
+            sanitized[key] = value.replace(/[<>]/g, '').trim().slice(0, 10000);
         } else if (typeof value === 'object' && value !== null) {
             sanitized[key] = sanitizeDecryptedData(value);
         } else {
             sanitized[key] = value;
         }
     }
-
     return sanitized;
 };
 
-/**
- * Check if decryption is available
- */
 export const isDecryptionAvailable = () => {
-    return privateKey !== null;
+    return !!getPrivateKey();
 };

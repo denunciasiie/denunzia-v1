@@ -5,14 +5,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies (including sharp and other production deps)
+RUN npm install --omit=dev
 
 # Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 3004
+# Expose port (Unified to 3001)
+EXPOSE 3001
 
 # Start command
 CMD ["npm", "start"]
