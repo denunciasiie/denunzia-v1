@@ -10,6 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 import { specs } from './swaggerConfig.js';
 import multer from 'multer';
 import { uploadToPinata } from './services/pinataService.js';
+import { analyzeNarrative } from './services/geminiService.js';
 import crypto from 'crypto';
 import sharp from 'sharp';
 
@@ -347,11 +348,33 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             algorithm,
             location,
             timestamp,
-            trustScore,
-            aiAnalysis,
+            trustScore: clientTrustScore,
+            aiAnalysis: clientAiAnalysis,
             narrativa_real,
             website_url // Honeypot field
         } = body;
+
+        // --- NEW: SERVER-SIDE AI ANALYSIS (Security Hardened) ---
+        let trustScore = parseFloat(clientTrustScore || 0.85);
+        let aiAnalysis = clientAiAnalysis || 'Sin análisis';
+
+        if (narrativa_real && narrativa_real.trim().length > 10) {
+            console.log(`[AI] Analyzing narrative for report ${id}...`);
+            try {
+                const aiResult = await analyzeNarrative(narrativa_real, category);
+
+                // Override with server-side AI findings
+                trustScore = aiResult.trustScore;
+                aiAnalysis = aiResult.aiAnalysis;
+
+                // Optional: If AI detects high confidence spam, we could flag it here
+                if (aiResult.isSpam) {
+                    console.warn(`[SECURITY] AI identified potential spam: ${id}`);
+                }
+            } catch (aiError) {
+                console.error('[AI] Analysis failed, falling back to client/defaults:', aiError.message);
+            }
+        }
 
         // Honeypot check: If bot fills this invisible field, silent reject
         if (website_url) {
