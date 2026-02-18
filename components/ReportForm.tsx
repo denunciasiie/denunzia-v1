@@ -184,8 +184,10 @@ export const ReportForm: React.FC = () => {
   // Smart API URL detection
   const getApiUrl = () => {
     if (typeof window !== 'undefined') {
-      if (window.location.hostname === 'denunzia.org' || window.location.hostname.includes('github.io')) {
-        return 'https://denunzia-v1.onrender.com';
+      const host = window.location.hostname;
+      // Add your production domain(s) here
+      if (host === 'denunzia.org' || host.includes('github.io') || host === 'www.denunzia.org') {
+        return 'https://denunzia-v1.onrender.com'; // Change to your actual production API URL if different
       }
     }
     return import.meta.env.VITE_API_URL || 'http://localhost:3001';
