@@ -35,7 +35,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ENCRYPTION_SECRET=${ENCRYPTION_SECRET}
       - PRIVATE_KEY_PEM=${PRIVATE_KEY_PEM}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://denunzia.org,https://www.denunzia.org}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://denunzia.org,https://denunziasiie.github.io,http://localhost:5173}
       - PINATA_JWT=${PINATA_JWT}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     ports:
