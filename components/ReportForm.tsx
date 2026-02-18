@@ -332,20 +332,34 @@ export const ReportForm: React.FC = () => {
     // reCAPTCHA v3 Token Generation
     let reCaptchaToken = '';
     const SITE_KEY = (window as any).RECAPTCHA_SITE_KEY || '6Ld_MOCK_SITE_KEY';
+    // Proof-of-Work (PoW) computation - 100% Anonymous
+    let powNonce = 0;
+    const difficulty = 4;
+    const reportId = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
 
-    if ((window as any).grecaptcha) {
-      try {
-        reCaptchaToken = await (window as any).grecaptcha.execute(SITE_KEY, { action: 'submit_report' });
-      } catch (captchaErr) {
-        console.warn('reCAPTCHA execution failed:', captchaErr);
+    try {
+      console.log('Generating security proof (PoW)...');
+      let hash = '';
+      const encoder = new TextEncoder();
+
+      // Keep incrementing nonce until we find a hash with enough leading zeros
+      while (true) {
+        const data = encoder.encode(reportId + powNonce);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        if (hash.startsWith('0'.repeat(difficulty))) break;
+        powNonce++;
       }
+    } catch (powError) {
+      console.error('PoW error:', powError);
     }
 
     try {
-      // Generate report ID
-      const id = Array.from(crypto.getRandomValues(new Uint8Array(8)))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+      const id = reportId;
 
       // Prepare data for encryption
       const reportData = {
@@ -403,7 +417,7 @@ export const ReportForm: React.FC = () => {
 
       // Send to backend
       const payload = new FormData();
-      payload.append('payload', JSON.stringify(fullPayload)); // Enviar todo como un solo JSON string
+      payload.append('payload', JSON.stringify(fullPayload));
 
       formData.files.forEach(file => {
         payload.append('files', file);
@@ -413,7 +427,7 @@ export const ReportForm: React.FC = () => {
       const response = await fetch(`${apiUrl}/api/reports`, {
         method: 'POST',
         headers: {
-          'x-recaptcha-token': reCaptchaToken
+          'pow-nonce': powNonce.toString()
         },
         body: payload
       });
@@ -803,6 +817,18 @@ export const ReportForm: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Honeypot Field - Invisible to humans */}
+          <div className="hidden" aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+            <input
+              type="text"
+              name="website_url"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.website_url}
+              onChange={e => setFormData({ ...formData, website_url: e.target.value })}
+            />
           </div>
 
           {/* Honeypot Field - Invisible to humans */}

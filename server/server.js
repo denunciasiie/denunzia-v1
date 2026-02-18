@@ -290,26 +290,16 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
     try {
         console.log('[API] POST /api/reports - Received request');
 
-        const reCaptchaToken = req.headers['x-recaptcha-token'];
-        const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
+        const { powNonce } = req.headers;
 
-        // Verify reCAPTCHA if secret is configured
-        if (RECAPTCHA_SECRET && reCaptchaToken) {
-            try {
-                const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${reCaptchaToken}`;
-                const verifyRes = await fetch(verifyUrl, { method: 'POST' });
-                const verifyData = await verifyRes.json();
+        // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
+        // Difficulty: 4 zeros (16 bits) - Hard for bots, easy for humans
+        const difficulty = 4;
+        const hash = crypto.createHash('sha256').update(req.body.id + powNonce).digest('hex');
 
-                if (!verifyData.success || verifyData.score < 0.5) {
-                    console.warn(`[SECURITY] reCAPTCHA failed. Score: ${verifyData.score}`);
-                    return res.status(403).json({ error: 'Security verification failed' });
-                }
-            } catch (captchaErr) {
-                console.error('reCAPTCHA verification error:', captchaErr);
-                // Continue if service is down, but log it
-            }
-        } else if (RECAPTCHA_SECRET && !reCaptchaToken) {
-            return res.status(403).json({ error: 'Security token missing' });
+        if (!hash.startsWith('0'.repeat(difficulty))) {
+            console.warn(`[SECURITY] Invalid PoW from IP: ${req.ip}`);
+            return res.status(403).json({ error: 'Security verification failed (PoW)' });
         }
 
         let body = req.body;
