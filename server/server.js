@@ -384,16 +384,18 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             try {
                 const aiResult = await analyzeNarrative(narrativa_real, category);
 
-                // Override with server-side AI findings
-                trustScore = aiResult.trustScore;
-                aiAnalysis = aiResult.aiAnalysis;
+                // Override and sanitize server-side AI findings
+                trustScore = parseFloat(aiResult.trustScore);
+                if (isNaN(trustScore)) trustScore = 0.85; // Failsafe
 
-                // Optional: If AI detects high confidence spam, we could flag it here
+                aiAnalysis = aiResult.aiAnalysis || 'Análisis completado.';
+
                 if (aiResult.isSpam) {
                     console.warn(`[SECURITY] AI identified potential spam: ${id}`);
                 }
             } catch (aiError) {
-                console.error('[AI] Analysis failed, falling back to client/defaults:', aiError.message);
+                console.error('[AI] Analysis failed, using defaults:', aiError.message);
+                if (isNaN(trustScore)) trustScore = 0.85;
             }
         }
 
