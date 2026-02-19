@@ -670,7 +670,8 @@ app.use((err, req, res, next) => {
 const server = app.listen(PORT, () => {
     console.log('');
     console.log('═══════════════════════════════════════════════════════');
-    console.log(`🚀 SIIEC Backend Server running on port ${PORT}`);
+    console.log(`🚀 SIIEC v1.1 - BLOQUEO TOTAL ACTIVADO`);
+    console.log(`📡 Backend Server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 API: http://localhost:${PORT}/api`);
     console.log(`💚 Health: http://localhost:${PORT}/api/health`);
