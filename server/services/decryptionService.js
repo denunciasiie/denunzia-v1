@@ -19,8 +19,9 @@ dotenv.config();
  */
 const getPrivateKey = () => {
     // 1. Try to load from Environment Variable (for decentralization/security)
-    if (process.env.PRIVATE_KEY_PEM) {
-        return process.env.PRIVATE_KEY_PEM.replace(/\\n/g, '\n');
+    const envKey = process.env.PRIVATE_KEY_PEM || process.env.PRIVATE_KEY;
+    if (envKey) {
+        return envKey.replace(/\\n/g, '\n');
     }
 
     // 2. Fallback to file system
