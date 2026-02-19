@@ -155,6 +155,15 @@ app.get('/api', (req, res) => {
 /**
  * Health check endpoint
  */
+// Health Check (Root for Render and /api/health)
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'online',
+        message: 'SIIEC API is running',
+        version: '1.1.2'
+    });
+});
+
 app.get('/api/health', async (req, res) => {
     try {
         const dbHealthy = await checkDatabaseHealth();
