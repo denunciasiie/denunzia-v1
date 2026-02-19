@@ -20,8 +20,13 @@ dotenv.config();
 const getPrivateKey = () => {
     // 1. Try to load from Environment Variable (for decentralization/security)
     const envKey = process.env.PRIVATE_KEY_PEM || process.env.PRIVATE_KEY;
+
     if (envKey) {
+        console.log(`[AUTH] Private key found in environment (Length: ${envKey.length})`);
         return envKey.replace(/\\n/g, '\n');
+    } else {
+        const envKeysFound = Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('PRIVATE'));
+        console.warn(`[AUTH] No private key found in environment. Env keys available with similar names: ${envKeysFound.join(', ') || 'none'}`);
     }
 
     // 2. Fallback to file system
