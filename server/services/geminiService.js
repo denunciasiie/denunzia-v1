@@ -3,8 +3,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const getModel = () => {
-    const key = process.env.GEMINI_API_KEY;
+    let key = process.env.GEMINI_API_KEY;
     if (!key) return null;
+
+    // Sanitize key (remove quotes and whitespace that platforms sometimes add)
+    key = key.trim().replace(/["']/g, '');
+
     try {
         const genAI = new GoogleGenerativeAI(key);
         return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
