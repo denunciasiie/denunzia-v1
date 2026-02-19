@@ -10,7 +10,7 @@ import swaggerUi from 'swagger-ui-express';
 import { specs } from './swaggerConfig.js';
 import multer from 'multer';
 import { uploadToPinata } from './services/pinataService.js';
-import { analyzeNarrative } from './services/geminiService.js';
+import { analyzeNarrative } from './services/aiService.js';
 import crypto from 'crypto';
 import sharp from 'sharp';
 
