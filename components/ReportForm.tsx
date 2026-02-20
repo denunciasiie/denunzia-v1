@@ -335,7 +335,7 @@ export const ReportForm: React.FC = () => {
 
     // Proof-of-Work (PoW) computation - 100% Anonymous
     let powNonce = 0;
-    const difficulty = 4;
+    const difficulty = 6;
     // Use window.crypto for better browser compatibility
     const reportId = Array.from(window.crypto.getRandomValues(new Uint8Array(8)))
       .map(b => b.toString(16).padStart(2, '0'))

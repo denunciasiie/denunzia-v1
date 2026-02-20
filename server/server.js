@@ -22,6 +22,37 @@ const PORT = process.env.PORT || 3001;
 // Trust proxy - Required for Render and other cloud platforms
 app.set('trust proxy', 1);
 
+// ==================== SECURITY HARDENING ====================
+const securityBans = new Map(); // IP -> { failures: number, banExpires: Date }
+
+const isHex = (str) => {
+    if (typeof str !== 'string' || str.length === 0) return false;
+    // Disallow known attack strings disguised as hex
+    if (str.toLowerCase().includes('hydra') || str.toLowerCase().includes('stealth')) return false;
+    return /^[0-9a-fA-F]+$/.test(str);
+};
+
+const checkSecurityBan = (req, res, next) => {
+    const ip = req.ip;
+    const ban = securityBans.get(ip);
+    if (ban && ban.banExpires > new Date()) {
+        console.warn(`[SECURITY] Blocked request from banned IP: ${ip}`);
+        return res.status(403).json({ error: 'Access denied. Temporary security ban in effect.' });
+    }
+    next();
+};
+
+const recordSecurityFailure = (ip) => {
+    const ban = securityBans.get(ip) || { failures: 0, banExpires: new Date(0) };
+    ban.failures += 1;
+    if (ban.failures >= 3) {
+        ban.banExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins ban
+        console.error(`[SECURITY] IP BANNED for 15 minutes: ${ip}`);
+    } else {
+        securityBans.set(ip, ban);
+    }
+};
+
 // ==================== MIDDLEWARE ====================
 
 // Request logging (Move to top for debugging)
@@ -323,7 +354,7 @@ app.get('/api/geocode/search', async (req, res) => {
 /**
  * POST /api/reports - Submit a new encrypted report with files
  */
-app.post('/api/reports', upload.array('files'), async (req, res) => {
+app.post('/api/reports', checkSecurityBan, upload.array('files'), async (req, res) => {
     try {
         console.log('[API] POST /api/reports - Received request');
 
@@ -346,13 +377,14 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
         const powNonce = req.headers['pow-nonce'];
 
         // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
-        // Difficulty: 4 zeros (16 bits) - Hard for bots, easy for humans
-        const difficulty = 4;
+        // Difficulty: 6 zeros (24 bits) - High cost for bots
+        const difficulty = 6;
         const reportIdForPow = body.id || 'unknown';
         const hash = crypto.createHash('sha256').update(reportIdForPow + powNonce).digest('hex');
 
         if (!hash.startsWith('0'.repeat(difficulty))) {
             console.warn(`[SECURITY] Invalid PoW from IP: ${req.ip} for report: ${reportIdForPow}`);
+            recordSecurityFailure(req.ip);
             return res.status(403).json({ error: 'Security verification failed (PoW)' });
         }
 
@@ -363,9 +395,9 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             category,
             type,
             customCrimeType,
-            encryptedData, // Now contains ONLY metadata
-            encryptedKey,
-            iv,
+            encryptedData, // MUST be Hex
+            encryptedKey,  // MUST be Hex
+            iv,           // MUST be Hex
             algorithm,
             location,
             timestamp,
@@ -374,6 +406,13 @@ app.post('/api/reports', upload.array('files'), async (req, res) => {
             narrativa_real,
             website_url // Honeypot field
         } = body;
+
+        // --- NEW: Strict Format Validation (Anti-Hydra/Stealth) ---
+        if (!isHex(encryptedData) || !isHex(encryptedKey) || !isHex(iv)) {
+            console.error(`[SECURITY] Invalid data format (Non-Hex) from IP: ${req.ip}`);
+            recordSecurityFailure(req.ip);
+            return res.status(400).json({ error: 'Tampered data detected. Submission rejected.' });
+        }
 
         // --- NEW: SERVER-SIDE AI ANALYSIS (Security Hardened) ---
         let trustScore = parseFloat(clientTrustScore || 0.85);
