@@ -34,9 +34,9 @@ export function Layout({ onReset }: { onReset: () => void }) {
                     >
                         <img src="/denunzia_logo.png" alt="DenunzIA Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-[0_0_10px_rgba(217,70,239,0.3)]" />
                         <div>
-                            <h1 className="text-sm md:text-lg font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] tracking-wide leading-none">
+                            <div className="text-sm md:text-lg font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] tracking-wide leading-none">
                                 DenunzIA
-                            </h1>
+                            </div>
                             <p className="text-[8px] md:text-[9px] text-[#94a3b8] font-heading uppercase tracking-widest hidden xs:block mt-0.5">
                                 Reporte Seguro
                             </p>

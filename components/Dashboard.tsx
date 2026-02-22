@@ -93,7 +93,7 @@ export const Dashboard: React.FC = () => {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[#1e293b] mb-2 flex items-center gap-3 font-heading">
             <Database className="text-[#d946ef]" />
-            Inteligencia Táctica
+            Denuncia Anónima y Análisis Delictivo
           </h1>
           <p className="text-[#94a3b8] text-sm font-medium font-heading uppercase tracking-widest">
             Visualización avanzada de incidentes con redes de calor dinámicas

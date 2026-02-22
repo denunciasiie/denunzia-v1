@@ -2,30 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Inicio -->
   <url>
-    <loc>https://denunzia.ai/</loc>
-    <lastmod>2026-02-02</lastmod>
+    <loc>https://denunzia.org/</loc>
+    <lastmod>2026-02-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <!-- Denunciar -->
   <url>
-    <loc>https://denunzia.ai/denunciar</loc>
-    <lastmod>2026-02-02</lastmod>
+    <loc>https://denunzia.org/denunciar</loc>
+    <lastmod>2026-02-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <!-- Información -->
   <url>
-    <loc>https://denunzia.ai/informacion</loc>
-    <lastmod>2026-02-02</lastmod>
+    <loc>https://denunzia.org/informacion</loc>
+    <lastmod>2026-02-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <!-- Admin (Opcional en sitemap público si es restringido, pero solicitado explícitamente) -->
-  <url>
-    <loc>https://denunzia.ai/admin</loc>
-    <lastmod>2026-02-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
 </urlset>
