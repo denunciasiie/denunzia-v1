@@ -25,11 +25,12 @@ app.set('trust proxy', 1);
 // ==================== SECURITY HARDENING ====================
 const securityBans = new Map(); // IP -> { failures: number, banExpires: Date }
 
-const isHex = (str) => {
+const isValidBase64Format = (str) => {
     if (typeof str !== 'string' || str.length === 0) return false;
-    // Disallow known attack strings disguised as hex
+    // Disallow known attack strings disguised as base64
     if (str.toLowerCase().includes('hydra') || str.toLowerCase().includes('stealth')) return false;
-    return /^[0-9a-fA-F]+$/.test(str);
+    // Base64 includes A-Z, a-z, 0-9, +, /, and =
+    return /^[a-zA-Z0-9+/=]+$/.test(str);
 };
 
 const checkSecurityBan = (req, res, next) => {
@@ -408,8 +409,8 @@ app.post('/api/reports', checkSecurityBan, upload.array('files'), async (req, re
         } = body;
 
         // --- NEW: Strict Format Validation (Anti-Hydra/Stealth) ---
-        if (!isHex(encryptedData) || !isHex(encryptedKey) || !isHex(iv)) {
-            console.error(`[SECURITY] Invalid data format (Non-Hex) from IP: ${req.ip}`);
+        if (!isValidBase64Format(encryptedData) || !isValidBase64Format(encryptedKey) || !isValidBase64Format(iv)) {
+            console.error(`[SECURITY] Invalid data format (Non-Base64) from IP: ${req.ip}`);
             recordSecurityFailure(req.ip);
             return res.status(400).json({ error: 'Tampered data detected. Submission rejected.' });
         }
