@@ -160,8 +160,6 @@ export const ReportForm: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    role: '' as UserRole | '',
-    customRole: '',
     category: '' as CrimeCategory | '',
     lat: null as number | null,
     lng: null as number | null,
@@ -293,14 +291,6 @@ export const ReportForm: React.FC = () => {
       setErrorMsg('Selecciona ubicación en el mapa');
       return false;
     }
-    if (!formData.role) {
-      setErrorMsg('Selecciona tipo de denunciante');
-      return false;
-    }
-    if (formData.role === UserRole.OTHER && !formData.customRole.trim()) {
-      setErrorMsg('Especifica el tipo de denunciante');
-      return false;
-    }
     if (!formData.category) {
       setErrorMsg('Selecciona la categoría del delito');
       return false;
@@ -411,7 +401,6 @@ export const ReportForm: React.FC = () => {
       const fullPayload = {
         id,
         isAnonymous: true,
-        role: formData.role === UserRole.OTHER ? formData.customRole : formData.role,
         category: formData.category,
         type: CrimeType.OTHER,
         encryptedData,
@@ -552,44 +541,8 @@ export const ReportForm: React.FC = () => {
             )}
           </div>
 
-          {/* Role Selection Section */}
+
           <div className="bg-white p-6 rounded-t-3xl shadow-2xl">
-            <h2 className="text-lg font-bold text-[#1e293b] mb-4">
-              Denuncias como:
-            </h2>
-
-            <div className="grid grid-cols-2 gap-3 mb-8">
-              {[
-                { value: UserRole.CITIZEN, label: 'Ciudadano' },
-                { value: UserRole.GOVERNMENT, label: 'Funcionario' },
-                { value: UserRole.COMPANY, label: 'Empresa' },
-                { value: UserRole.MILITARY, label: 'Militar' },
-                { value: UserRole.JOURNALISM, label: 'Periodista' },
-                { value: UserRole.OTHER, label: 'Otro' }
-              ].map(option => (
-                <button
-                  key={option.value}
-                  onClick={() => setFormData({ ...formData, role: option.value, customRole: option.value === UserRole.OTHER ? formData.customRole : '' })}
-                  className={`text-center p-3 rounded-xl border-2 transition-all text-xs font-bold ${formData.role === option.value
-                    ? 'bg-[#7c3aed]/10 border-[#7c3aed] text-[#7c3aed]'
-                    : 'bg-slate-50 border-slate-200 text-[#64748b]'
-                    }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-
-            {formData.role === UserRole.OTHER && (
-              <input
-                type="text"
-                placeholder="Especifica el tipo de denunciante"
-                value={formData.customRole}
-                onChange={e => setFormData({ ...formData, customRole: e.target.value })}
-                className="w-full p-4 border-2 border-[#7c3aed]/30 rounded-2xl bg-white text-[#1e293b] mb-6 focus:outline-none focus:border-[#7c3aed]"
-              />
-            )}
-
             {/* Crime Category Selection - UNODC ICCS */}
             <h2 className="text-lg font-bold text-[#1e293b] mb-4">
               Categoría del Incidente:
