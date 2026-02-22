@@ -325,7 +325,7 @@ export const ReportForm: React.FC = () => {
 
     // Proof-of-Work (PoW) computation - 100% Anonymous
     let powNonce = 0;
-    const difficulty = 6;
+    const difficulty = 5;
     // Use window.crypto for better browser compatibility
     const reportId = Array.from(window.crypto.getRandomValues(new Uint8Array(8)))
       .map(b => b.toString(16).padStart(2, '0'))
@@ -348,8 +348,8 @@ export const ReportForm: React.FC = () => {
         if (hash.startsWith('0'.repeat(difficulty))) break;
         powNonce++;
 
-        // Timeout check every 1000 iterations
-        if (powNonce % 1000 === 0 && (Date.now() - startTime > 10000)) {
+        // Timeout check every 1000 iterations (max 20 seconds)
+        if (powNonce % 1000 === 0 && (Date.now() - startTime > 20000)) {
           console.warn('PoW took too long, proceeding anyway with nonce:', powNonce);
           break;
         }

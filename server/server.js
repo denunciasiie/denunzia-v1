@@ -378,7 +378,7 @@ app.post('/api/reports', checkSecurityBan, upload.array('files'), async (req, re
 
         // 1. Verify Proof-of-Work (PoW) - Anonymous & Zero-Registration
         // Difficulty: 6 zeros (24 bits) - High cost for bots
-        const difficulty = 6;
+        const difficulty = 5;
         const reportIdForPow = body.id || 'unknown';
         const hash = crypto.createHash('sha256').update(reportIdForPow + powNonce).digest('hex');
 
