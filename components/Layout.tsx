@@ -86,7 +86,7 @@ export function Layout({ onReset }: { onReset: () => void }) {
             {/* Main Content Area */}
             <main className="flex-1 relative overflow-y-auto">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#d946ef]/5 to-transparent pointer-events-none"></div>
-                <div className="relative z-10 h-full">
+                <div className="relative z-10 transition-all duration-300">
                     <Outlet />
                 </div>
             </main>

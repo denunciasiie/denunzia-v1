@@ -15,6 +15,27 @@ export function About() {
                     </p>
                 </div>
 
+                {/* Sección Informativa SEO - Misión Nacional */}
+                <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl mb-8 border border-purple-100">
+                    <h2 className="text-2xl md:text-3xl font-bold text-[#1e293b] mb-6 font-heading">
+                        DenunZIA: La Plataforma Líder en Denuncia Ciudadana Anónima en México
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 className="text-xl font-bold text-[#7c3aed] mb-4">Nuestra Misión Nacional</h3>
+                            <p className="text-[#64748b] leading-relaxed">
+                                En DenunZIA, nuestra misión es transformar la seguridad ciudadana en toda la República Mexicana. Proporcionamos una herramienta tecnológica avanzada que permite a cualquier habitante de los 32 estados reportar actos delictivos de forma 100% segura y sin miedo a represalias.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-[#6366f1] mb-4">Inteligencia para un México más Seguro</h3>
+                            <p className="text-[#64748b] leading-relaxed">
+                                No solo recibimos reportes; generamos inteligencia colectiva. Gracias a nuestro mapa de calor nacional, los ciudadanos pueden visualizar zonas de riesgo en tiempo real, permitiendo una toma de decisiones informada y una presión social efectiva para la justicia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Main Description */}
                 <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl mb-8">
                     <div className="space-y-6 text-[#64748b] leading-relaxed">

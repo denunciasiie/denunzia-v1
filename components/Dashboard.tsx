@@ -258,6 +258,78 @@ export const Dashboard: React.FC = () => {
           </div>
         </aside>
       </div>
+
+      {/* Sección Informativa SEO - Misión y Blindaje */}
+      <section className="mt-16 bg-[#0f172a]/30 backdrop-blur-2xl rounded-[40px] p-8 md:p-12 border border-white/5 shadow-2xl">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-4xl font-black font-cyber bg-clip-text text-transparent bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mb-6 leading-tight uppercase tracking-tighter">
+            DenunZIA: La Plataforma Líder en Denuncia Ciudadana Anónima en México
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#d946ef] to-[#3b82f6] mx-auto rounded-full opacity-50"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-[#d946ef] font-heading uppercase tracking-wider flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-[#d946ef] rounded-full"></span>
+              Nuestra Misión Nacional
+            </h3>
+            <p className="text-[#94a3b8] leading-relaxed text-sm md:text-base font-medium">
+              En DenunZIA, nuestra misión es transformar la seguridad ciudadana en toda la República Mexicana. Proporcionamos una herramienta tecnológica avanzada que permite a cualquier habitante de los 32 estados reportar actos delictivos de forma 100% segura y sin miedo a represalias.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-[#3b82f6] font-heading uppercase tracking-wider flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-[#3b82f6] rounded-full"></span>
+              Inteligencia para un México más Seguro
+            </h3>
+            <p className="text-[#94a3b8] leading-relaxed text-sm md:text-base font-medium">
+              No solo recibimos reportes; generamos inteligencia colectiva. Gracias a nuestro mapa de calor nacional, los ciudadanos pueden visualizar zonas de riesgo en tiempo real, permitiendo una toma de decisiones informada y una presión social efectiva para la justicia.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-10">
+          <div className="text-center">
+            <h3 className="text-2xl font-black text-white/90 font-cyber mb-4 uppercase tracking-normal">
+              Anonimato Real y Blindaje Digital
+            </h3>
+            <p className="text-[#64748b] max-w-2xl mx-auto italic text-sm">
+              "Entendemos que la confianza es la base de la prevención. Por ello, hemos diseñado una infraestructura de grado militar:"
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="group p-8 bg-white/5 rounded-[32px] border border-white/5 hover:border-[#d946ef]/30 transition-all duration-500 hover:bg-[#d946ef]/5">
+              <h4 className="text-sm font-black text-white mb-4 uppercase tracking-[0.1em] font-cyber group-hover:text-[#d946ef] transition-colors">
+                Encriptación E2EE
+              </h4>
+              <p className="text-xs text-[#94a3b8] leading-loose">
+                Utilizamos algoritmos **RSA-4096** para asegurar que solo tú y los analistas autorizados puedan ver la información.
+              </p>
+            </div>
+
+            <div className="group p-8 bg-white/5 rounded-[32px] border border-white/5 hover:border-[#3b82f6]/30 transition-all duration-500 hover:bg-[#3b82f6]/5">
+              <h4 className="text-sm font-black text-white mb-4 uppercase tracking-[0.1em] font-cyber group-hover:text-[#3b82f6] transition-colors">
+                Seguridad en la Nube
+              </h4>
+              <p className="text-xs text-[#94a3b8] leading-loose">
+                Operamos con conexiones cifradas **SSL** y bases de datos optimizadas para garantizar la integridad de cada reporte desde cualquier punto del país.
+              </p>
+            </div>
+
+            <div className="group p-8 bg-white/5 rounded-[32px] border border-white/5 hover:border-[#d946ef]/30 transition-all duration-500 hover:bg-[#d946ef]/5">
+              <h4 className="text-sm font-black text-white mb-4 uppercase tracking-[0.1em] font-cyber group-hover:text-[#d946ef] transition-colors">
+                Eliminación de Metadatos
+              </h4>
+              <p className="text-xs text-[#94a3b8] leading-loose">
+                Protegemos tu ubicación real eliminando automáticamente el rastro digital de tus evidencias fotográficas y documentos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
