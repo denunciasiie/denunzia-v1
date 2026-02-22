@@ -110,9 +110,9 @@ export const Dashboard: React.FC = () => {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="bg-transparent border-none text-xs font-bold text-white outline-none pr-4 py-1 uppercase tracking-tight font-heading"
           >
-            <option value="TODOS">TODOS LOS DELITOS</option>
+            <option value="TODOS" className="bg-[#1e293b] text-white">TODOS LOS DELITOS</option>
             {Object.values(CrimeCategory).map(cat => (
-              <option key={cat} value={cat}>{cat.toUpperCase()}</option>
+              <option key={cat} value={cat} className="bg-[#1e293b] text-white">{cat.toUpperCase()}</option>
             ))}
           </select>
         </div>
@@ -121,7 +121,7 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
         {/* Sección del Mapa - Visor Principal */}
-        <div className="lg:col-span-3 bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-white/50">
+        <div className="lg:col-span-3 bg-[#0f172a]/40 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-white/5">
           <div className="p-4 bg-[#1e293b] text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-pulse' : 'bg-green-400 shadow-[0_0_8px_#4ade80]'}`}></div>
