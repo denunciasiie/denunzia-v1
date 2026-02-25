@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { ReportForm } from './components/ReportForm';
 import { AdminPanel } from './components/AdminPanel';
 import { About } from './components/About';
+import { Privacy } from './components/Privacy';
 import { SecurityGateway } from './components/SecurityGateway';
 import { SplashScreen } from './components/SplashScreen';
 
@@ -66,6 +67,16 @@ function AppContent() {
           <Route path="informacion" element={
             <PageTransition>
               <About />
+            </PageTransition>
+          } />
+          <Route path="mapa-de-calor" element={
+            <PageTransition>
+              <Dashboard />
+            </PageTransition>
+          } />
+          <Route path="privacidad" element={
+            <PageTransition>
+              <Privacy />
             </PageTransition>
           } />
           <Route path="admin" element={

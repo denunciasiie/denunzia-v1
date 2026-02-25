@@ -6,8 +6,9 @@
     <title>DenunZIA - Redireccionando...</title>
     <script type="text/javascript">
         // Si el usuario llega aquí es porque intentó acceder a una ruta sin el símbolo '#'
-        // Forzamos la redirección a la raíz con el HashRouter para que GitHub Pages no devuelva 404.
-        window.location.href = window.location.origin + '/#/';
+        // Forzamos la redirección preservando la ruta para que el HashRouter pueda manejarla.
+        var path = window.location.pathname;
+        window.location.href = window.location.origin + '/#' + path;
     </script>
 </head>
 
